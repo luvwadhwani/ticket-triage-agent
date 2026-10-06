@@ -1,0 +1,103 @@
+{
+  "ticketId": "t7",
+  "recordedAt": "2026-10-06T17:44:23.020Z",
+  "model": "mock",
+  "events": [
+    {
+      "type": "run-start",
+      "ticketId": "t7",
+      "at": 0
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "input": {
+        "category": "Sales",
+        "priority": "Medium",
+        "confidence": 0.88,
+        "intents": [
+          "pricing"
+        ]
+      },
+      "at": 650
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "ok": true,
+      "summary": "Sales, medium priority",
+      "at": 1300
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "input": {
+        "email": "priya@example.com"
+      },
+      "at": 1950
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "ok": true,
+      "summary": "Priya Nair, Free plan, customer since 2026",
+      "at": 2600
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-3",
+      "tool": "search_docs",
+      "input": {
+        "query": "Team plan pricing upgrade"
+      },
+      "at": 3250
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-3",
+      "tool": "search_docs",
+      "ok": true,
+      "summary": "Found “Plans and pricing” and 2 more",
+      "at": 3900
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-4",
+      "tool": "draft_reply",
+      "input": {
+        "text": "Hi Priya, the Team plan is $12 per seat per month with a 5-seat minimum, so 6 people would be $72 a month. You can upgrade any time in Settings, Billing, Change plan, and it's prorated.\n\nAcme Cloud Support",
+        "citations": [
+          "doc-plans-pricing",
+          "doc-upgrade"
+        ]
+      },
+      "at": 4550
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-4",
+      "tool": "draft_reply",
+      "ok": true,
+      "summary": "Cites Plans and pricing, Change your plan",
+      "at": 5200
+    },
+    {
+      "type": "outcome",
+      "outcome": {
+        "status": "ready-to-send",
+        "draft": {
+          "text": "Hi Priya, the Team plan is $12 per seat per month with a 5-seat minimum, so 6 people would be $72 a month. You can upgrade any time in Settings, Billing, Change plan, and it's prorated.\n\nAcme Cloud Support",
+          "citations": [
+            "doc-plans-pricing",
+            "doc-upgrade"
+          ]
+        }
+      },
+      "at": 5850
+    }
+  ]
+}

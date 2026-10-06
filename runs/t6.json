@@ -1,0 +1,101 @@
+{
+  "ticketId": "t6",
+  "recordedAt": "2026-10-06T17:44:23.019Z",
+  "model": "mock",
+  "events": [
+    {
+      "type": "run-start",
+      "ticketId": "t6",
+      "at": 0
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "input": {
+        "category": "Feedback",
+        "priority": "Low",
+        "confidence": 0.9,
+        "intents": [
+          "feedback"
+        ]
+      },
+      "at": 650
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "ok": true,
+      "summary": "Feedback, low priority",
+      "at": 1300
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "input": {
+        "email": "alex@example.co"
+      },
+      "at": 1950
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "ok": true,
+      "summary": "Alex Kim, Team plan, customer since 2024",
+      "at": 2600
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-3",
+      "tool": "search_docs",
+      "input": {
+        "query": "feature requests"
+      },
+      "at": 3250
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-3",
+      "tool": "search_docs",
+      "ok": true,
+      "summary": "Found “Feature requests” and 2 more",
+      "at": 3900
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-4",
+      "tool": "draft_reply",
+      "input": {
+        "text": "Hi Alex, thank you, that's great to hear! I've shared your dark mode request with the product team; they review requests every week and you can follow it on our public roadmap.\n\nAcme Cloud Support",
+        "citations": [
+          "doc-feature-requests"
+        ]
+      },
+      "at": 4550
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-4",
+      "tool": "draft_reply",
+      "ok": true,
+      "summary": "Cites Feature requests",
+      "at": 5200
+    },
+    {
+      "type": "outcome",
+      "outcome": {
+        "status": "ready-to-send",
+        "draft": {
+          "text": "Hi Alex, thank you, that's great to hear! I've shared your dark mode request with the product team; they review requests every week and you can follow it on our public roadmap.\n\nAcme Cloud Support",
+          "citations": [
+            "doc-feature-requests"
+          ]
+        }
+      },
+      "at": 5850
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  { "email": "maya@example.com", "name": "Maya Chen", "plan": "Pro", "status": "active", "since": "2024-03-11" },
+  { "email": "ops@example.org", "name": "Jordan Patel", "plan": "Team", "status": "active", "since": "2023-08-02" },
+  { "email": "li@example.net", "name": "Li Wei", "plan": "Free", "status": "active", "since": "2026-06-19" },
+  { "email": "dev@example.io", "name": "Sam Okafor", "plan": "Enterprise", "status": "active", "since": "2022-11-30" },
+  { "email": "sam@example.com", "name": "Sam Rivera", "plan": "Pro", "status": "active", "since": "2025-01-07" },
+  { "email": "alex@example.co", "name": "Alex Kim", "plan": "Team", "status": "active", "since": "2024-09-15" },
+  { "email": "priya@example.com", "name": "Priya Nair", "plan": "Free", "status": "active", "since": "2026-02-21" },
+  { "email": "chris@example.net", "name": "Chris Moreau", "plan": "Pro", "status": "past_due", "since": "2023-05-05" },
+  { "email": "ana@example.org", "name": "Ana Souza", "plan": "Team", "status": "active", "since": "2025-07-28" },
+  { "email": "tom@example.io", "name": "Tom Becker", "plan": "Enterprise", "status": "active", "since": "2021-04-12" }
+]

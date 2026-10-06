@@ -1,0 +1,13 @@
+[
+  { "id": "inv_1001", "email": "maya@example.com", "date": "2026-09-03", "amountUsd": 49, "description": "Pro plan, September", "status": "paid" },
+  { "id": "inv_1042", "email": "maya@example.com", "date": "2026-10-03", "amountUsd": 49, "description": "Pro plan, October", "status": "paid" },
+  { "id": "inv_1043", "email": "maya@example.com", "date": "2026-10-03", "amountUsd": 49, "description": "Pro plan, October", "status": "paid" },
+  { "id": "inv_1010", "email": "sam@example.com", "date": "2026-10-07", "amountUsd": 49, "description": "Pro plan, October", "status": "paid" },
+  { "id": "inv_1020", "email": "chris@example.net", "date": "2026-09-12", "amountUsd": 49, "description": "Pro plan, September", "status": "paid" },
+  { "id": "inv_1055", "email": "chris@example.net", "date": "2026-10-12", "amountUsd": 49, "description": "Pro plan, October", "status": "paid" },
+  { "id": "inv_1030", "email": "ops@example.org", "date": "2026-10-01", "amountUsd": 240, "description": "Team plan, October (20 seats)", "status": "paid" },
+  { "id": "inv_1040", "email": "dev@example.io", "date": "2026-10-01", "amountUsd": 2400, "description": "Enterprise plan, October", "status": "paid" },
+  { "id": "inv_1061", "email": "alex@example.co", "date": "2026-10-15", "amountUsd": 120, "description": "Team plan, October (10 seats)", "status": "paid" },
+  { "id": "inv_1062", "email": "ana@example.org", "date": "2026-10-28", "amountUsd": 180, "description": "Team plan, October (15 seats)", "status": "paid" },
+  { "id": "inv_1070", "email": "tom@example.io", "date": "2026-10-01", "amountUsd": 3600, "description": "Enterprise plan, October", "status": "paid" }
+]

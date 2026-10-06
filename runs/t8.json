@@ -1,0 +1,103 @@
+{
+  "ticketId": "t8",
+  "recordedAt": "2026-10-06T17:44:23.030Z",
+  "model": "mock",
+  "events": [
+    {
+      "type": "run-start",
+      "ticketId": "t8",
+      "at": 0
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "input": {
+        "category": "Billing",
+        "priority": "Medium",
+        "confidence": 0.6,
+        "intents": [
+          "refund"
+        ]
+      },
+      "at": 650
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "ok": true,
+      "summary": "Billing, medium priority",
+      "at": 1300
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "input": {
+        "email": "chris@example.net"
+      },
+      "at": 1950
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "ok": true,
+      "summary": "Chris Moreau, Pro plan, past due, customer since 2023",
+      "at": 2600
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-3",
+      "tool": "get_invoices",
+      "input": {
+        "email": "chris@example.net"
+      },
+      "at": 3250
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-3",
+      "tool": "get_invoices",
+      "ok": true,
+      "summary": "2 recent invoices, no duplicate charges",
+      "at": 3900
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-4",
+      "tool": "draft_reply",
+      "input": {
+        "text": "Hi Chris, thanks for getting in touch. I can't issue refunds myself, so I've passed your message to our billing team, who will review your account and reply by email.\n\nAcme Cloud Support",
+        "citations": [
+          "doc-refunds"
+        ]
+      },
+      "at": 4550
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-4",
+      "tool": "draft_reply",
+      "ok": true,
+      "summary": "Cites Refund policy",
+      "at": 5200
+    },
+    {
+      "type": "outcome",
+      "outcome": {
+        "status": "needs-human",
+        "rule": "refund",
+        "reason": "Refunds always need human approval.",
+        "draft": {
+          "text": "Hi Chris, thanks for getting in touch. I can't issue refunds myself, so I've passed your message to our billing team, who will review your account and reply by email.\n\nAcme Cloud Support",
+          "citations": [
+            "doc-refunds"
+          ]
+        }
+      },
+      "at": 5850
+    }
+  ]
+}

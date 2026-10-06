@@ -1,0 +1,120 @@
+<style>
+  .wf { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 12px; color: #1f2933; background: #f6f5f1; border-radius: 10px; padding: 10px; }
+  .wf .bar { display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid #dde2e6; border-radius:8px; padding:6px 10px; margin-bottom:8px; font-weight:600; }
+  .wf .bar span { font-weight:400; color:#6b7580; font-size:11px; }
+  .wf .pane { background:#fff; border:1px solid #dde2e6; border-radius:8px; padding:8px; }
+  .wf .h { font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#6b7580; font-weight:700; margin-bottom:6px; }
+  .wf .tk { border:1px solid #e3e7ea; border-radius:6px; padding:5px 6px; margin-bottom:5px; line-height:1.3; }
+  .wf .tk.on { border-color:#0f6e63; background:#e7f3f0; }
+  .wf .tk small { color:#6b7580; display:block; }
+  .wf .tag { display:inline-block; font-size:10px; padding:1px 6px; border-radius:99px; background:#eef1f3; color:#44505c; margin-right:3px; }
+  .wf .tag.g { background:#e3f1ee; color:#0f6e63; }
+  .wf .tag.o { background:#fdeee4; color:#b4501a; }
+  .wf .step { display:flex; gap:6px; align-items:flex-start; padding:5px 0; border-bottom:1px dashed #e3e7ea; line-height:1.3; }
+  .wf .step:last-child { border-bottom:0; }
+  .wf .dot { width:16px; height:16px; border-radius:50%; background:#0f6e63; color:#fff; font-size:9px; display:flex; align-items:center; justify-content:center; flex:none; margin-top:1px; }
+  .wf .dot.wait { background:#c9d0d6; }
+  .wf code { font-family: ui-monospace, Menlo, monospace; font-size:10.5px; background:#f1f3f5; padding:0 3px; border-radius:3px; }
+  .wf .reply { background:#fbfbf9; border:1px solid #e3e7ea; border-radius:6px; padding:6px; line-height:1.4; margin:6px 0; }
+  .wf .btns { display:flex; gap:5px; flex-wrap:wrap; }
+  .wf .b { padding:4px 8px; border-radius:6px; border:1px solid #c9d0d6; background:#fff; font-size:11px; font-weight:600; }
+  .wf .b.p { background:#0f6e63; color:#fff; border-color:#0f6e63; }
+  .wf .warn { background:#fdeee4; color:#8a3b10; border-radius:6px; padding:5px 6px; line-height:1.3; margin-top:6px; }
+  .wf .stepper { display:flex; gap:6px; margin-bottom:8px; }
+  .wf .stepper div { flex:1; text-align:center; padding:5px; border-radius:6px; background:#fff; border:1px solid #dde2e6; font-weight:600; font-size:11px; }
+  .wf .stepper div.on { background:#0f6e63; color:#fff; border-color:#0f6e63; }
+</style>
+
+<h2>Which layout should the demo screen use?</h2>
+<p class="subtitle">Same sample ticket in all three: a customer charged twice. The agent classifies it, checks the account and billing, finds the refund policy, drafts a reply, and stops for a human because refunds need approval. Click the one that feels right (you can also mix and match in the terminal).</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Three-pane console</h3>
+      <p>Inbox on the left, the agent's live steps in the middle, the draft and your decision on the right. Feels like a real support tool; best on desktop, everything visible at once.</p>
+    </div>
+  </div>
+</div>
+<div class="wf" style="margin:8px 0 28px">
+  <div class="bar">Ticket triage agent — demo <span>Acme SaaS (fictional) · Claude · 8 sample tickets</span></div>
+  <div style="display:grid; grid-template-columns: 1fr 1.5fr 1.3fr; gap:8px;">
+    <div class="pane">
+      <div class="h">Inbox</div>
+      <div class="tk on"><b>Charged twice this month</b><small>maya@example.com · Pro plan</small></div>
+      <div class="tk"><b>Can't log in after SSO change</b><small>ops@example.org · Team</small></div>
+      <div class="tk"><b>How do I export to CSV?</b><small>li@example.net · Free</small></div>
+      <div class="tk"><b>Your API is down!!</b><small>dev@example.io · Enterprise</small></div>
+      <div class="tk"><b>Cancel my account</b><small>sam@example.com · Pro</small></div>
+    </div>
+    <div class="pane">
+      <div class="h">Agent run · live</div>
+      <div class="step"><div class="dot">1</div><div><b>Classify</b> <span class="tag o">Billing</span><span class="tag">High</span><span class="tag">92% sure</span></div></div>
+      <div class="step"><div class="dot">2</div><div><b>Look up customer</b><br><code>lookup_customer(maya@…)</code> → Pro since 2024</div></div>
+      <div class="step"><div class="dot">3</div><div><b>Check billing</b><br><code>get_invoices()</code> → two $49 charges on Oct 3</div></div>
+      <div class="step"><div class="dot">4</div><div><b>Search help docs</b><br><code>search_docs("duplicate charge")</code> → Refund policy §2</div></div>
+      <div class="step"><div class="dot">5</div><div><b>Draft reply</b> · cites Refund policy §2</div></div>
+      <div class="step"><div class="dot wait">6</div><div><b>Decide</b> → needs a human (refund)</div></div>
+    </div>
+    <div class="pane">
+      <div class="h">Your decision</div>
+      <div class="reply">Hi Maya, sorry about that. You were charged twice on Oct 3. I've requested a $49 refund to your card; it takes 5–7 days…</div>
+      <div class="warn"><b>Why it stopped:</b> refunds always need human approval (guardrail).</div>
+      <div class="btns" style="margin-top:8px"><span class="b p">Approve &amp; send</span><span class="b">Edit</span><span class="b">Escalate</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Inbox + single story column</h3>
+      <p>Inbox on the left; on the right the ticket, then the steps, then the draft and buttons, read top to bottom. Simpler, works on a phone.</p>
+    </div>
+  </div>
+</div>
+<div class="wf" style="margin:8px 0 28px">
+  <div class="bar">Ticket triage agent — demo <span>Acme SaaS (fictional)</span></div>
+  <div style="display:grid; grid-template-columns: 1fr 2.4fr; gap:8px;">
+    <div class="pane">
+      <div class="h">Inbox</div>
+      <div class="tk on"><b>Charged twice this month</b><small>Pro plan</small></div>
+      <div class="tk"><b>Can't log in after SSO change</b><small>Team</small></div>
+      <div class="tk"><b>How do I export to CSV?</b><small>Free</small></div>
+      <div class="tk"><b>Your API is down!!</b><small>Enterprise</small></div>
+    </div>
+    <div class="pane">
+      <div class="tk"><b>"Hi, I was charged twice for October. Please fix."</b><small>maya@example.com · Pro plan</small></div>
+      <div class="h" style="margin-top:8px">What the agent did</div>
+      <div class="step"><div class="dot">1</div><div>Classified as <span class="tag o">Billing</span><span class="tag">High</span></div></div>
+      <div class="step"><div class="dot">2</div><div>Checked the account and invoices → duplicate $49 charge</div></div>
+      <div class="step"><div class="dot">3</div><div>Found Refund policy §2 in the help docs</div></div>
+      <div class="step"><div class="dot wait">4</div><div>Drafted a reply and stopped: refunds need a human</div></div>
+      <div class="reply">Hi Maya, sorry about that. You were charged twice on Oct 3. I've requested a $49 refund…</div>
+      <div class="btns"><span class="b p">Approve &amp; send</span><span class="b">Edit</span><span class="b">Escalate</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Guided walkthrough</h3>
+      <p>One ticket at a time, full width, with a 3-step progress bar and a "Next ticket" button. Most hand-held; best for non-technical clients, least like a real tool.</p>
+    </div>
+  </div>
+</div>
+<div class="wf" style="margin:8px 0 8px">
+  <div class="bar">Ticket triage agent — demo <span>Ticket 1 of 8 · Next ticket →</span></div>
+  <div class="stepper"><div>1 · The ticket</div><div class="on">2 · The agent works</div><div>3 · You decide</div></div>
+  <div class="pane">
+    <div class="tk"><b>"Hi, I was charged twice for October. Please fix."</b><small>maya@example.com · Pro plan</small></div>
+    <div class="step"><div class="dot">1</div><div><b>Classify</b> <span class="tag o">Billing</span><span class="tag">High</span></div></div>
+    <div class="step"><div class="dot">2</div><div><b>Check account + billing</b> → duplicate $49 charge on Oct 3</div></div>
+    <div class="step"><div class="dot">3</div><div><b>Search help docs</b> → Refund policy §2</div></div>
+    <div class="step"><div class="dot wait">4</div><div><b>Draft reply</b> · working…</div></div>
+  </div>
+</div>

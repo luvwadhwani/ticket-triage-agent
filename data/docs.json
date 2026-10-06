@@ -1,0 +1,22 @@
+[
+  { "id": "doc-refunds", "title": "Refund policy", "body": "Duplicate or accidental charges are refunded in full. Refunds go back to the original card within 5-7 business days. Every refund is approved by the billing team, who confirm by email." },
+  { "id": "doc-billing-cycle", "title": "How billing works", "body": "Plans are billed monthly on the day you signed up. Annual plans are billed once a year at a 15% discount. Plan changes are prorated." },
+  { "id": "doc-update-card", "title": "Update your payment card", "body": "Owners can change the card in Settings, Billing, Payment method. The new card is used from the next invoice." },
+  { "id": "doc-invoices", "title": "Download invoices", "body": "Every invoice is in Settings, Billing, Invoices. Click an invoice to download a PDF for your records or your accountant." },
+  { "id": "doc-failed-payment", "title": "When a payment fails", "body": "We retry a failed payment three times over seven days and email the account owner each time. Update your card to avoid interruption; the account stays active during retries." },
+  { "id": "doc-sso-setup", "title": "Set up SSO", "body": "Enterprise workspaces can enable SAML SSO in Settings, Security. You need your identity provider's metadata URL, entity ID and signing certificate." },
+  { "id": "doc-sso-troubleshoot", "title": "Troubleshooting SSO sign-in", "body": "An invalid assertion error after changing identity provider usually means the certificate or entity ID in Settings, Security is out of date. Only workspace admins can change SSO settings; our security team can help verify the setup." },
+  { "id": "doc-password-reset", "title": "Reset your password", "body": "Use Forgot password on the sign-in page. After five failed attempts the account locks for 30 minutes for your protection." },
+  { "id": "doc-2fa", "title": "Two-factor authentication", "body": "If you lose your 2FA device, use one of your backup codes. Without backup codes, our security team verifies your identity before resetting 2FA." },
+  { "id": "doc-export-csv", "title": "Export your data to CSV", "body": "Open Reports, choose a report, click Export and pick CSV or Excel. Exports up to 100,000 rows download immediately; larger exports are emailed as a ZIP." },
+  { "id": "doc-api-keys", "title": "Create an API key", "body": "Admins create API keys in Settings, Developers, API keys. Keys are shown once; store them securely and rotate them every 90 days." },
+  { "id": "doc-api-rate-limits", "title": "API rate limits", "body": "The API allows 600 requests per minute on Team and 3,000 on Enterprise. Responses include rate limit headers; a 429 response means slow down and retry." },
+  { "id": "doc-status-page", "title": "Service status", "body": "Live status for the API, Dashboard and Billing is at status.acme.example. During incidents we post updates every 30 minutes." },
+  { "id": "doc-cancel", "title": "Cancel your subscription", "body": "Owners can request cancellation in Settings, Billing. Cancellation takes effect at the end of the billing period, and our team confirms every request by email." },
+  { "id": "doc-delete-data", "title": "Delete your account and data", "body": "Account deletion is permanent and removes all data after 30 days. Export anything you need first. Deletion requests are confirmed by our team." },
+  { "id": "doc-plans-pricing", "title": "Plans and pricing", "body": "Free: 1 user. Pro: $49 per month. Team: $12 per seat per month, minimum 5 seats. Enterprise: custom pricing with SSO, audit logs and a dedicated contact." },
+  { "id": "doc-upgrade", "title": "Change your plan", "body": "Upgrade or downgrade in Settings, Billing, Change plan. Upgrades apply immediately and are prorated; downgrades apply at the next billing date." },
+  { "id": "doc-seats", "title": "Invite teammates", "body": "Admins invite people from Settings, Members, Invite. On Team plans each member uses one seat; add seats any time." },
+  { "id": "doc-feature-requests", "title": "Feature requests", "body": "We read every request. The product team reviews them weekly and tracks the most requested ideas on our public roadmap." },
+  { "id": "doc-integrations-slack", "title": "Slack integration", "body": "Connect Slack in Settings, Integrations to get report and alert notifications in any channel. Available on Team and Enterprise." }
+]

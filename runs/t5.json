@@ -1,0 +1,103 @@
+{
+  "ticketId": "t5",
+  "recordedAt": "2026-10-06T17:44:23.017Z",
+  "model": "mock",
+  "events": [
+    {
+      "type": "run-start",
+      "ticketId": "t5",
+      "at": 0
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "input": {
+        "category": "Account",
+        "priority": "Medium",
+        "confidence": 0.92,
+        "intents": [
+          "cancel"
+        ]
+      },
+      "at": 650
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "ok": true,
+      "summary": "Account, medium priority",
+      "at": 1300
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "input": {
+        "email": "sam@example.com"
+      },
+      "at": 1950
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "ok": true,
+      "summary": "Sam Rivera, Pro plan, customer since 2025",
+      "at": 2600
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-3",
+      "tool": "search_docs",
+      "input": {
+        "query": "cancel subscription"
+      },
+      "at": 3250
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-3",
+      "tool": "search_docs",
+      "ok": true,
+      "summary": "Found “Cancel your subscription”",
+      "at": 3900
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-4",
+      "tool": "draft_reply",
+      "input": {
+        "text": "Hi Sam, thanks for letting us know. I've passed your cancellation request to our team; they'll confirm it by email, and your Pro plan stays active until the end of the billing period.\n\nAcme Cloud Support",
+        "citations": [
+          "doc-cancel"
+        ]
+      },
+      "at": 4550
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-4",
+      "tool": "draft_reply",
+      "ok": true,
+      "summary": "Cites Cancel your subscription",
+      "at": 5200
+    },
+    {
+      "type": "outcome",
+      "outcome": {
+        "status": "needs-human",
+        "rule": "account-deletion",
+        "reason": "Cancelling or deleting an account always needs a human.",
+        "draft": {
+          "text": "Hi Sam, thanks for letting us know. I've passed your cancellation request to our team; they'll confirm it by email, and your Pro plan stays active until the end of the billing period.\n\nAcme Cloud Support",
+          "citations": [
+            "doc-cancel"
+          ]
+        }
+      },
+      "at": 5850
+    }
+  ]
+}

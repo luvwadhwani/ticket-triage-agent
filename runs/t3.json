@@ -1,0 +1,101 @@
+{
+  "ticketId": "t3",
+  "recordedAt": "2026-10-06T17:44:23.013Z",
+  "model": "mock",
+  "events": [
+    {
+      "type": "run-start",
+      "ticketId": "t3",
+      "at": 0
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "input": {
+        "category": "How-to",
+        "priority": "Low",
+        "confidence": 0.95,
+        "intents": [
+          "how-to"
+        ]
+      },
+      "at": 650
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "ok": true,
+      "summary": "How-to, low priority",
+      "at": 1300
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "input": {
+        "email": "li@example.net"
+      },
+      "at": 1950
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "ok": true,
+      "summary": "Li Wei, Free plan, customer since 2026",
+      "at": 2600
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-3",
+      "tool": "search_docs",
+      "input": {
+        "query": "export reports CSV"
+      },
+      "at": 3250
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-3",
+      "tool": "search_docs",
+      "ok": true,
+      "summary": "Found “Export your data to CSV” and 1 more",
+      "at": 3900
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-4",
+      "tool": "draft_reply",
+      "input": {
+        "text": "Hi Li, yes: open Reports, choose the report, click Export and pick CSV. Exports up to 100,000 rows download straight away; bigger ones arrive by email as a ZIP.\n\nAcme Cloud Support",
+        "citations": [
+          "doc-export-csv"
+        ]
+      },
+      "at": 4550
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-4",
+      "tool": "draft_reply",
+      "ok": true,
+      "summary": "Cites Export your data to CSV",
+      "at": 5200
+    },
+    {
+      "type": "outcome",
+      "outcome": {
+        "status": "ready-to-send",
+        "draft": {
+          "text": "Hi Li, yes: open Reports, choose the report, click Export and pick CSV. Exports up to 100,000 rows download straight away; bigger ones arrive by email as a ZIP.\n\nAcme Cloud Support",
+          "citations": [
+            "doc-export-csv"
+          ]
+        }
+      },
+      "at": 5850
+    }
+  ]
+}

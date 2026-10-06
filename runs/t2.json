@@ -1,0 +1,95 @@
+{
+  "ticketId": "t2",
+  "recordedAt": "2026-10-06T17:44:23.011Z",
+  "model": "mock",
+  "events": [
+    {
+      "type": "run-start",
+      "ticketId": "t2",
+      "at": 0
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "input": {
+        "category": "Access",
+        "priority": "High",
+        "confidence": 0.9,
+        "intents": [
+          "security"
+        ]
+      },
+      "at": 650
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-1",
+      "tool": "classify_ticket",
+      "ok": true,
+      "summary": "Access, high priority",
+      "at": 1300
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "input": {
+        "email": "ops@example.org"
+      },
+      "at": 1950
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-2",
+      "tool": "lookup_customer",
+      "ok": true,
+      "summary": "Jordan Patel, Team plan, customer since 2023",
+      "at": 2600
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-3",
+      "tool": "search_docs",
+      "input": {
+        "query": "SSO sign-in identity provider"
+      },
+      "at": 3250
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-3",
+      "tool": "search_docs",
+      "ok": true,
+      "summary": "Found “Troubleshooting SSO sign-in” and 2 more",
+      "at": 3900
+    },
+    {
+      "type": "tool-call",
+      "callId": "call-4",
+      "tool": "escalate",
+      "input": {
+        "team": "Security",
+        "reason": "Whole team locked out after an SSO identity provider change (invalid assertion)."
+      },
+      "at": 4550
+    },
+    {
+      "type": "tool-result",
+      "callId": "call-4",
+      "tool": "escalate",
+      "ok": true,
+      "summary": "To Security: Whole team locked out after an SSO identity provider change (invalid assertion).",
+      "at": 5200
+    },
+    {
+      "type": "outcome",
+      "outcome": {
+        "status": "needs-human",
+        "rule": "security",
+        "reason": "Sign-in and security issues always go to a human."
+      },
+      "at": 5850
+    }
+  ]
+}

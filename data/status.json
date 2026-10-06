@@ -1,0 +1,5 @@
+[
+  { "component": "API", "state": "degraded", "note": "Elevated error rates on /v2 endpoints since 09:40 UTC; engineers are investigating." },
+  { "component": "Dashboard", "state": "operational", "note": "" },
+  { "component": "Billing", "state": "operational", "note": "" }
+]
