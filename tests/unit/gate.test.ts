@@ -37,6 +37,18 @@ describe('verifyPass', () => {
     expect(await verifyPass('not-a-jwt', TEST_PUBLIC_KEY, 'triage', now)).toEqual({ ok: false, reason: 'invalid' });
   });
 
+  it('rejects a pass that lacks an expiry, an issue time or a subject, even when correctly signed', async () => {
+    const key = await importPKCS8(TEST_PRIVATE_KEY, 'Ed25519');
+    const signed = (build: (jwt: SignJWT) => SignJWT) =>
+      build(new SignJWT({ name: 'Acme', projects: ['triage'] }).setProtectedHeader({ alg: 'Ed25519' }).setIssuer('work.luvwadhwani.com')).sign(key);
+    const noExp = await signed((j) => j.setSubject('acc-1').setIssuedAt(sec(now)));
+    const noIat = await signed((j) => j.setSubject('acc-1').setExpirationTime(sec(now) + 900));
+    const noSub = await signed((j) => j.setIssuedAt(sec(now)).setExpirationTime(sec(now) + 900));
+    for (const token of [noExp, noIat, noSub]) {
+      expect(await verifyPass(token, TEST_PUBLIC_KEY, 'triage', now)).toEqual({ ok: false, reason: 'invalid' });
+    }
+  });
+
   it('reads a pass without an admin claim as not admin', async () => {
     expect(await verifyPass(await pass(), TEST_PUBLIC_KEY, 'triage', now)).toMatchObject({ ok: true, viewer: { admin: false } });
   });
@@ -129,6 +141,12 @@ describe('gateEnv', () => {
     expect(
       gateEnv({ GATE_PUBLIC_KEY: 'line1\\nline2', NEXT_PUBLIC_HUB_URL: 'https://work.luvwadhwani.com/', PROJECT_ID: 'triage', PUBLIC_ORIGIN: '' }),
     ).toEqual({ publicKey: 'line1\nline2', hubUrl: 'https://work.luvwadhwani.com', projectId: 'triage', canonicalOrigin: null });
+  });
+
+  it('refuses the published test key on a production deployment, where anyone could sign passes with it', () => {
+    const settings = { GATE_PUBLIC_KEY: TEST_PUBLIC_KEY.replace(/\n/g, '\\n'), NEXT_PUBLIC_HUB_URL: 'https://work.luvwadhwani.com', PROJECT_ID: 'triage' };
+    expect(() => gateEnv({ ...settings, PUBLIC_ORIGIN: 'https://triage.luvwadhwani.com' })).toThrow('test key');
+    expect(gateEnv(settings).publicKey).toBe(TEST_PUBLIC_KEY);
   });
 
   it('refuses to run without its settings', () => {

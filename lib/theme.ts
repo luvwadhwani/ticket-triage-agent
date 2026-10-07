@@ -1,4 +1,4 @@
-// theme v1. The canonical copy lives in luvwadhwani/portfolio-hub (lib/theme.ts). Copy it unchanged into each project.
+// theme v2. The canonical copy lives in luvwadhwani/portfolio-hub (lib/theme.ts). Copy it unchanged into each project.
 export const THEME_COOKIE = 'lw_theme';
 export const BASE_DOMAIN = 'luvwadhwani.com';
 
@@ -6,6 +6,12 @@ export type Theme = 'light' | 'dark' | 'system';
 
 export function parseTheme(value: string | null | undefined): Theme {
   return value === 'light' || value === 'dark' ? value : 'system';
+}
+
+/** The choice as the browser holds it, from a `document.cookie` string. */
+export function themeFromCookies(cookieString: string): Theme {
+  const match = cookieString.match(new RegExp(`(?:^|;\\s*)${THEME_COOKIE}=([^;]*)`));
+  return parseTheme(match?.[1]);
 }
 
 /** Shared across *.luvwadhwani.com so a choice made on the hub follows into every project; host-only elsewhere. */

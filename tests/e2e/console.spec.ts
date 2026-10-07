@@ -92,6 +92,14 @@ test('the shared top bar names the viewer and links back to the projects', async
   await expect(bar.getByRole('link', { name: 'Admin' })).toHaveCount(0);
 });
 
+test("a prospect can't make the Admin link appear by sending the admin header themselves", async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-lw-admin': '1' });
+  await page.goto('/');
+  const bar = page.getByRole('banner');
+  await expect(bar.getByText(`Signed in as ${TEST_VIEWER}`)).toBeVisible();
+  await expect(bar.getByRole('link', { name: 'Admin' })).toHaveCount(0);
+});
+
 test('each page has one banner landmark, the shared top bar', async ({ page }) => {
   for (const path of ['/', '/evals']) {
     await page.goto(path);

@@ -2,9 +2,9 @@
 
 /* Layout: helpdesk console. Inbox rail | ticket thread + agent activity | decision with a triage tag */
 :root {
-  --bg: #f6f8fb; --surface: #ffffff; --surface-2: #f1f5f9; --ink: #0f172a; --muted: #475569; --faint: #64748b; --line: #e2e8f0;
+  --bg: #f6f8fb; --surface: #ffffff; --surface-2: #f1f5f9; --ink: #0f172a; --muted: #475569; --faint: #5f6e84; --line: #e2e8f0;
   --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #eaf1fe;
-  --ok: #15803d; --ok-soft: #e7f6ec; --warn: #a16207; --warn-soft: #fdf3dc; --danger: #b91c1c; --danger-soft: #fdecec;
+  --ok: #15803d; --ok-soft: #eef9f1; --warn: #a16207; --warn-soft: #fef7e6; --danger: #b91c1c; --danger-soft: #fdecec;
   --shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px rgb(15 23 42 / 0.06);
   --font-ui: var(--font-instrument), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-code: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
@@ -12,7 +12,7 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0b1220; --surface: #111a2e; --surface-2: #16213a; --ink: #e2e8f0; --muted: #94a3b8; --faint: #7c8aa0; --line: #1e293b;
+    --bg: #0b1220; --surface: #111a2e; --surface-2: #16213a; --ink: #e2e8f0; --muted: #94a3b8; --faint: #8291a8; --line: #1e293b;
     --accent: #60a5fa; --accent-ink: #06122a; --accent-soft: #132447;
     --ok: #4ade80; --ok-soft: #0f2a1b; --warn: #fbbf24; --warn-soft: #2e2410; --danger: #f87171; --danger-soft: #3a1517;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.25);
@@ -20,7 +20,7 @@
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0b1220; --surface: #111a2e; --surface-2: #16213a; --ink: #e2e8f0; --muted: #94a3b8; --faint: #7c8aa0; --line: #1e293b;
+  --bg: #0b1220; --surface: #111a2e; --surface-2: #16213a; --ink: #e2e8f0; --muted: #94a3b8; --faint: #8291a8; --line: #1e293b;
   --accent: #60a5fa; --accent-ink: #06122a; --accent-soft: #132447;
   --ok: #4ade80; --ok-soft: #0f2a1b; --warn: #fbbf24; --warn-soft: #2e2410; --danger: #f87171; --danger-soft: #3a1517;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.25);

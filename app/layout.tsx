@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { IBM_Plex_Mono, Instrument_Sans } from 'next/font/google';
 import { cookies, headers } from 'next/headers';
 import { TopBar } from '@/components/TopBar';
+import { hubOrigin } from '@/lib/client/run-stream';
 import { THEME_COOKIE, parseTheme, themeAttribute } from '@/lib/theme';
 import './globals.css';
 
@@ -29,7 +30,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className={`${instrument.variable} ${plexMono.variable}`} data-theme={themeAttribute(theme)}>
       <body>
-        <TopBar viewer={{ name: viewer, admin: h.get('x-lw-admin') === '1' }} hubUrl={process.env.NEXT_PUBLIC_HUB_URL ?? ''} theme={theme} />
+        <TopBar viewer={{ name: viewer, admin: h.get('x-lw-admin') === '1' }} hubUrl={hubOrigin(process.env.NEXT_PUBLIC_HUB_URL)} theme={theme} />
         {children}
       </body>
     </html>

@@ -1,7 +1,7 @@
 'use client';
-// theme switch v1. The canonical copy lives in luvwadhwani/portfolio-hub. Copy it unchanged into each project.
-import { useState, type ReactNode } from 'react';
-import { themeAttribute, themeCookie, type Theme } from '@/lib/theme';
+// theme switch v2. The canonical copy lives in luvwadhwani/portfolio-hub. Copy it unchanged into each project.
+import { useEffect, useSyncExternalStore, type ReactNode } from 'react';
+import { themeAttribute, themeCookie, themeFromCookies, type Theme } from '@/lib/theme';
 
 const icon = (children: ReactNode) => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -33,7 +33,10 @@ const OPTIONS: { value: Theme; label: string; icon: ReactNode }[] = [
   },
 ];
 
-/** Applies the choice to the page at once and remembers it for every project. */
+/**
+ * Applies the choice to the page at once and remembers it for every project. Rewriting the cookie on each
+ * visit also keeps it alive in Safari, which ends cookies written by scripts after 7 days.
+ */
 function applyTheme(next: Theme) {
   const attr = themeAttribute(next);
   if (attr) document.documentElement.dataset.theme = attr;
@@ -41,11 +44,21 @@ function applyTheme(next: Theme) {
   document.cookie = themeCookie(next, window.location.hostname);
 }
 
+const listeners = new Set<() => void>();
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+};
+const cookieChoice = () => themeFromCookies(document.cookie);
+
 export function ThemeSwitch({ initial }: { initial: Theme }) {
-  const [theme, setTheme] = useState(initial);
+  // The cookie, not the server-rendered `initial`, says what's chosen: after Back or Forward the page can
+  // come from a cache that predates the last choice.
+  const theme = useSyncExternalStore(subscribe, cookieChoice, () => initial);
+  useEffect(() => applyTheme(cookieChoice()), []);
   function choose(next: Theme) {
-    setTheme(next);
     applyTheme(next);
+    listeners.forEach((listener) => listener());
   }
   return (
     <div className="lw-theme" role="group" aria-label="Colour mode">

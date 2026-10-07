@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LiveRunError, liveFailureNotice, liveFailureReason, noRecordingNotice, readRunStream, renewUrl } from '@/lib/client/run-stream';
+import { LiveRunError, hubOrigin, liveFailureNotice, liveFailureReason, noRecordingNotice, readRunStream, renewUrl } from '@/lib/client/run-stream';
 import type { RunEvent } from '@/lib/types';
 
 const streamOf = (chunks: string[], status = 200) =>
@@ -65,7 +65,21 @@ describe('noRecordingNotice', () => {
   });
 });
 
+describe('hubOrigin', () => {
+  it('reduces the configured hub address to its origin, so a trailing slash never makes //api/sign-out', () => {
+    expect(hubOrigin('https://work.luvwadhwani.com/')).toBe('https://work.luvwadhwani.com');
+    expect(hubOrigin('http://localhost:3100')).toBe('http://localhost:3100');
+    expect(hubOrigin(undefined)).toBe('');
+  });
+});
+
 describe('renewUrl', () => {
+  it('works with a hub address that ends in a slash', () => {
+    expect(renewUrl('https://work.luvwadhwani.com/', 'https://triage.luvwadhwani.com/?ticket=t4')).toBe(
+      'https://work.luvwadhwani.com/renew?next=https%3A%2F%2Ftriage.luvwadhwani.com%2F%3Fticket%3Dt4',
+    );
+  });
+
   it('sends the browser through the hub and back to the same ticket', () => {
     expect(renewUrl('http://localhost:3100', 'http://localhost:3000/?ticket=t4')).toBe(
       'http://localhost:3100/renew?next=http%3A%2F%2Flocalhost%3A3000%2F%3Fticket%3Dt4',

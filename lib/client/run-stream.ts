@@ -48,7 +48,10 @@ export function liveFailureNotice(err: unknown): string {
 }
 
 /** Where to send the browser when the 15-minute pass ran out while the page was open. */
-export const renewUrl = (hubUrl: string, href: string) => `${hubUrl}/renew?next=${encodeURIComponent(href)}`;
+/** The hub's origin from NEXT_PUBLIC_HUB_URL, so a trailing slash in the setting never doubles up in a link. */
+export const hubOrigin = (raw: string | undefined) => (raw ? new URL(raw).origin : '');
+
+export const renewUrl = (hubUrl: string, href: string) => `${hubOrigin(hubUrl)}/renew?next=${encodeURIComponent(href)}`;
 
 /** Shown when there is no recording to play; keeps the live failure reason when a live run fell back to it. */
 export function noRecordingNotice(liveFailure?: string): string {

@@ -1,4 +1,4 @@
-// gate v3. The canonical copy lives in luvwadhwani/portfolio-hub (lib/gate.ts) with its tests.
+// gate v4. The canonical copy lives in luvwadhwani/portfolio-hub (lib/gate.ts) with its tests.
 // Copy it unchanged into each project, next to proxy.ts (templates/proxy.ts in the hub).
 import { errors, importSPKI, jwtVerify } from 'jose';
 
@@ -6,6 +6,10 @@ export const PASS_COOKIE = 'lw_pass';
 export const PASS_ISSUER = 'work.luvwadhwani.com';
 export const PASS_ALG = 'Ed25519';
 export const RENEWED_PARAM = 'lw_renewed';
+
+/** The public half of the test key in the repos' tests/fixtures/keys.ts. Its private half is public, so production refuses it. */
+const PUBLISHED_TEST_KEY = 'MCowBQYDK2VwAyEAwgOyzngPVbbdN9OdHzNExpghEPjs/SsPIztXnx/6hRw=';
+export const isPublishedTestKey = (pem: string) => pem.replace(/-----[^-]+-----|\s/g, '') === PUBLISHED_TEST_KEY;
 
 export interface Viewer {
   id: string;
@@ -47,6 +51,7 @@ export async function verifyPass(token: string | undefined, publicKeyPem: string
     const { payload } = await jwtVerify(token, await publicKey(publicKeyPem), {
       issuer: PASS_ISSUER,
       algorithms: [PASS_ALG],
+      requiredClaims: ['exp', 'iat', 'sub'],
       currentDate: now,
     });
     if (typeof payload.sub !== 'string' || typeof payload.name !== 'string' || !Array.isArray(payload.projects)) {
@@ -117,7 +122,11 @@ export function gateEnv(env: Record<string, string | undefined> = process.env): 
   if (!publicKey || !hubUrl || !projectId) {
     throw new Error('The gate needs GATE_PUBLIC_KEY, NEXT_PUBLIC_HUB_URL and PROJECT_ID.');
   }
-  return { publicKey, hubUrl: new URL(hubUrl).origin, projectId, canonicalOrigin: env.PUBLIC_ORIGIN ? new URL(env.PUBLIC_ORIGIN).origin : null };
+  const canonicalOrigin = env.PUBLIC_ORIGIN ? new URL(env.PUBLIC_ORIGIN).origin : null;
+  if (canonicalOrigin && isPublishedTestKey(publicKey)) {
+    throw new Error('GATE_PUBLIC_KEY is the published test key. Use the key printed by `npm run secrets` in the hub.');
+  }
+  return { publicKey, hubUrl: new URL(hubUrl).origin, projectId, canonicalOrigin };
 }
 
 /** Tells the hub a page was opened. Fire-and-forget: a lost log line must never block the visitor. */
