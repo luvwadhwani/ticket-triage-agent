@@ -5,8 +5,14 @@ vi.mock('@/lib/model', async () => {
   return { MODEL_ID: 'mock', getModel: vi.fn(() => scriptedModelFor('t3')) };
 });
 
+vi.mock('@/lib/rate-limit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/rate-limit')>()),
+  getLiveRunLimiter: vi.fn(),
+}));
+
 import { POST } from '@/app/api/run/route';
 import { getModel } from '@/lib/model';
+import { getLiveRunLimiter, type LimitResult } from '@/lib/rate-limit';
 import { parseRunRequest } from '@/lib/run-request';
 
 const post = (body: unknown, headers: Record<string, string> = {}) =>
@@ -28,10 +34,16 @@ describe('parseRunRequest', () => {
 });
 
 describe('POST /api/run', () => {
-  beforeEach(() => vi.stubEnv('LIVE_RUNS_ENABLED', 'true'));
+  const limiter = vi.fn(async (): Promise<LimitResult> => 'ok');
+  beforeEach(() => {
+    vi.stubEnv('LIVE_RUNS_ENABLED', 'true');
+    limiter.mockImplementation(async () => 'ok');
+    vi.mocked(getLiveRunLimiter).mockReturnValue(limiter);
+  });
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.mocked(getModel).mockClear();
+    limiter.mockClear();
   });
 
   it('returns 400 for a body that is not JSON, without calling the model', async () => {
@@ -41,6 +53,42 @@ describe('POST /api/run', () => {
 
   it('returns 400 for an unknown ticket, without calling the model', async () => {
     expect((await post({ ticketId: 't99' })).status).toBe(400);
+    expect(getModel).not.toHaveBeenCalled();
+  });
+
+  it('does not use up a visitor’s runs on a bad request', async () => {
+    await post({ ticketId: 't99' });
+    expect(limiter).not.toHaveBeenCalled();
+  });
+
+  it('counts runs against the visitor’s IP address', async () => {
+    await post({ ticketId: 't3' }, { 'x-real-ip': '9.9.9.9' });
+    expect(limiter).toHaveBeenCalledWith('9.9.9.9');
+  });
+
+  it('returns 429 once a visitor has used their live runs for the day', async () => {
+    limiter.mockImplementation(async () => 'visitor-limit');
+    expect((await post({ ticketId: 't3' })).status).toBe(429);
+    expect(getModel).not.toHaveBeenCalled();
+  });
+
+  it('returns 503 once the site’s daily cap is reached', async () => {
+    limiter.mockImplementation(async () => 'site-limit');
+    expect((await post({ ticketId: 't3' })).status).toBe(503);
+    expect(getModel).not.toHaveBeenCalled();
+  });
+
+  it('refuses live runs when the rate limiter is not configured', async () => {
+    vi.mocked(getLiveRunLimiter).mockReturnValue(null);
+    expect((await post({ ticketId: 't3' })).status).toBe(503);
+    expect(getModel).not.toHaveBeenCalled();
+  });
+
+  it('refuses live runs when the rate limiter cannot be reached', async () => {
+    limiter.mockImplementation(async () => {
+      throw new Error('ECONNREFUSED');
+    });
+    expect((await post({ ticketId: 't3' })).status).toBe(503);
     expect(getModel).not.toHaveBeenCalled();
   });
 

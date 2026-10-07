@@ -39,7 +39,7 @@ ticket ─▶ Claude (AI SDK 7 tool loop, max 8 steps) ─▶ 7 tools over fake 
 
 - Next.js 16, TypeScript and Tailwind, deployed on Vercel.
 - Claude Sonnet through the Vercel AI Gateway.
-- Every run is a stream of events. The page replays a **recorded real run** by default, so visiting costs nothing. **Run live** streams a fresh run, rate-limited to 5 per day per visitor with a monthly spend cap. If a live run can't start, the page says why and plays the recording instead.
+- Every run is a stream of events. The page replays a **recorded real run** by default, so visiting costs nothing. **Run live** streams a fresh run. Live runs are limited to 5 per visitor per day plus a site-wide daily cap, counted in Redis (Vercel's firewall can only count over 10 minutes), under a monthly AI Gateway budget. If a live run can't start, the page says why and plays the recording instead.
 
 | Part | Where |
 |---|---|
@@ -47,6 +47,7 @@ ticket ─▶ Claude (AI SDK 7 tool loop, max 8 steps) ─▶ 7 tools over fake 
 | Tools (pure functions over `data/`) | `lib/tools/` |
 | Safety rules | `lib/policy.ts` |
 | Live run endpoint (NDJSON stream) | `app/api/run/route.ts` |
+| Live run limits | `lib/rate-limit.ts` |
 | Console UI | `components/` |
 
 ## Tests
@@ -63,6 +64,8 @@ npm run dev            # replays the committed recordings; no API key needed
 ```
 
 For live runs, recordings and evals, link the Vercel project and pull its environment (`npx vercel link && npx vercel env pull .env.local`), or set `AI_GATEWAY_API_KEY`.
+
+Live runs through the page also need `LIVE_RUNS_ENABLED=true` and an Upstash Redis database (the Vercel Marketplace integration sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`). Without Redis the endpoint refuses live runs rather than run them uncounted. `LIVE_RUNS_DAILY_CAP` sets the site-wide daily cap (default 10).
 
 ## Out of scope, on purpose
 

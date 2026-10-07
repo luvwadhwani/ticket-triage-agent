@@ -45,7 +45,7 @@ describe('readRunStream', () => {
 describe('liveFailureNotice', () => {
   it('explains rate limits, the kill switch and other failures', () => {
     expect(liveFailureNotice(new LiveRunError(429))).toBe('Live runs are rate-limited (5 per day). Showing the recorded run instead.');
-    expect(liveFailureNotice(new LiveRunError(503))).toBe('Live runs are switched off right now. Showing the recorded run instead.');
+    expect(liveFailureNotice(new LiveRunError(503))).toBe('Live runs are paused right now. Showing the recorded run instead.');
     expect(liveFailureNotice(new TypeError('fetch failed'))).toBe('The live run failed. Showing the recorded run instead.');
   });
 });
