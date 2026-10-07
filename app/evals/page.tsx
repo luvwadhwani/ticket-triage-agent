@@ -11,7 +11,7 @@ export default function EvalsPage() {
   const data = resultsJson as unknown as Results;
   return (
     <div className="app evals">
-      <header className="topbar">
+      <div className="topbar">
         <div className="brand">
           <span className="mark" aria-hidden="true">
             A
@@ -21,7 +21,7 @@ export default function EvalsPage() {
         <nav className="topnav" aria-label="About this demo">
           <Link href="/">Back to the demo</Link>
         </nav>
-      </header>
+      </div>
 
       <main className="evals-body">
         <h1>How accurate is it?</h1>

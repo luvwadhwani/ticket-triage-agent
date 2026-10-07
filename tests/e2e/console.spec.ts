@@ -92,6 +92,13 @@ test('the shared top bar names the viewer and links back to the projects', async
   await expect(bar.getByRole('link', { name: 'Admin' })).toHaveCount(0);
 });
 
+test('each page has one banner landmark, the shared top bar', async ({ page }) => {
+  for (const path of ['/', '/evals']) {
+    await page.goto(path);
+    await expect(page.getByRole('banner')).toHaveCount(1);
+  }
+});
+
 test('the colour switch is remembered across a reload', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('banner').getByRole('button', { name: 'Dark' }).click();

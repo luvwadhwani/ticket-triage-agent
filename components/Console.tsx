@@ -41,7 +41,7 @@ export function Console({
         </p>
       </div>
 
-      <header className="topbar">
+      <div className="topbar">
         <div className="brand">
           <span className="mark" aria-hidden="true">
             A
@@ -53,7 +53,7 @@ export function Console({
           <Link href="/evals">Accuracy</Link>
           {repoUrl && <a href={repoUrl}>Code on GitHub</a>}
         </nav>
-      </header>
+      </div>
 
       <div className="workspace">
         <Inbox tickets={tickets} selectedId={selectedId} onSelect={setSelectedId} />
