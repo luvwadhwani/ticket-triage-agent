@@ -1,10 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
+import { TEST_VIEWER, addPass } from './pass';
 
 const pickTicket = (page: Page, subject: string) =>
   page.getByRole('region', { name: 'Inbox' }).getByRole('button', { name: new RegExp(subject) }).click();
 
 const ticket = (page: Page) => page.getByRole('region', { name: 'Ticket' });
 const decision = (page: Page) => page.getByRole('region', { name: 'Your decision' });
+
+test.beforeEach(async ({ context, baseURL }) => addPass(context, baseURL!));
 
 test('ticket 1: the refund rule stops the agent, and approving shows what would happen', async ({ page }) => {
   await page.goto('/');
@@ -62,11 +65,36 @@ test('the accuracy page is one click from the console', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Back to the demo' })).toBeVisible();
 });
 
-test('a rate-limited live run falls back to the recording and says why', async ({ page }) => {
+test('a live run past the daily allowance falls back to the recording and says why', async ({ page }) => {
   await page.route('**/api/run', (route) => route.fulfill({ status: 429, body: '' }));
   await page.goto('/');
   await expect(decision(page).getByText('Needs your approval')).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Run live' }).click();
-  await expect(page.getByText('Live runs are rate-limited (5 per day). Showing the recorded run instead.')).toBeVisible();
+  await expect(page.getByText("You've used today's live runs. Showing the recorded run.")).toBeVisible();
   await expect(decision(page).getByText('Needs your approval')).toBeVisible({ timeout: 15_000 });
+});
+
+test('an expired pass during a live run goes through the hub and comes back to the same ticket', async ({ page }) => {
+  await page.route('**/api/run', (route) => route.fulfill({ status: 401, body: '' }));
+  await page.route('http://localhost:3100/**', (route) => route.fulfill({ status: 200, body: 'hub' }));
+  await page.goto('/');
+  await pickTicket(page, 'Your API is down!!');
+  await page.getByRole('button', { name: 'Run live' }).click();
+  await page.waitForURL(/localhost:3100\/renew\?next=/);
+  expect(decodeURIComponent(page.url())).toContain('ticket=t4');
+});
+
+test('the shared top bar names the viewer and links back to all projects', async ({ page }) => {
+  await page.goto('/');
+  const bar = page.getByRole('navigation', { name: "Luv Wadhwani's workspace" });
+  await expect(bar.getByText(`Signed in as ${TEST_VIEWER}`)).toBeVisible();
+  await expect(bar.getByRole('link', { name: 'All projects' })).toHaveAttribute('href', 'http://localhost:3100');
+});
+
+test('without a pass, pages go to the hub and live runs are refused', async ({ request }) => {
+  const page = await request.get('/', { maxRedirects: 0 });
+  expect(page.status()).toBe(307);
+  expect(page.headers().location).toMatch(/^http:\/\/localhost:3100\/renew\?next=http%3A%2F%2Flocalhost%3A3000%2F/);
+  const run = await request.post('/api/run', { data: { ticketId: 't1' }, maxRedirects: 0 });
+  expect(run.status()).toBe(401);
 });

@@ -2,7 +2,7 @@
 
 import { useCallback, useReducer, useRef } from 'react';
 import { initialRunState, runReducer, type RunSource } from '@/lib/client/run-state';
-import { liveFailureNotice, liveFailureReason, noRecordingNotice, readRunStream } from '@/lib/client/run-stream';
+import { LiveRunError, liveFailureNotice, liveFailureReason, noRecordingNotice, readRunStream, renewUrl } from '@/lib/client/run-stream';
 import { replay } from '@/lib/replay';
 import type { RecordedRun } from '@/lib/types';
 
@@ -40,6 +40,13 @@ export function useRun(getRecording: (ticketId: string) => RecordedRun | null) {
             for await (const event of readRunStream(res)) dispatch({ type: 'event', runId, event });
           } catch (err) {
             if (ctrl.signal.aborted) return;
+            if (err instanceof LiveRunError && err.status === 401) {
+              // The pass ran out while the page was open: renew it at the hub and come back to this ticket.
+              const here = new URL(window.location.href);
+              here.searchParams.set('ticket', ticketId);
+              window.location.assign(renewUrl(process.env.NEXT_PUBLIC_HUB_URL ?? '', here.href));
+              return;
+            }
             dispatch({ type: 'fallback', runId, notice: liveFailureNotice(err) });
             await playRecording(liveFailureReason(err));
           }

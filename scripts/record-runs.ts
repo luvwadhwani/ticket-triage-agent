@@ -13,7 +13,7 @@ for (const ticket of tickets.filter((t) => !only || t.id === only)) {
   const events: RunEvent[] = [];
   const { outcome } = await runAgent({
     ticket,
-    model: mock ? scriptedModelFor(ticket.id) : getModel(),
+    model: mock ? scriptedModelFor(ticket.id) : getModel(ticket.id),
     emit: (e) => events.push(e),
     now: mock ? tickClock() : undefined,
   });

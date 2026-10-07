@@ -2,24 +2,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/model', async () => {
   const { scriptedModelFor } = await import('@/lib/agent/scripted-model');
-  return { MODEL_ID: 'mock', getModel: vi.fn(() => scriptedModelFor('t3')) };
+  return { MODEL_ID: 'mock', getModel: vi.fn((ticketId: string) => scriptedModelFor(ticketId)) };
 });
 
-vi.mock('@/lib/rate-limit', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/rate-limit')>()),
-  getLiveRunLimiter: vi.fn(),
+vi.mock('@/lib/hub', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/hub')>()),
+  claimLiveRun: vi.fn(),
 }));
 
 import { POST } from '@/app/api/run/route';
+import { claimLiveRun } from '@/lib/hub';
 import { getModel } from '@/lib/model';
-import { getLiveRunLimiter, type LimitResult } from '@/lib/rate-limit';
 import { parseRunRequest } from '@/lib/run-request';
 
 const post = (body: unknown, headers: Record<string, string> = {}) =>
   POST(
     new Request('http://localhost/api/run', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', ...headers },
+      headers: { 'content-type': 'application/json', cookie: 'lw_pass=test-pass', ...headers },
       body: typeof body === 'string' ? body : JSON.stringify(body),
     }),
   );
@@ -34,16 +34,16 @@ describe('parseRunRequest', () => {
 });
 
 describe('POST /api/run', () => {
-  const limiter = vi.fn(async (): Promise<LimitResult> => 'ok');
   beforeEach(() => {
     vi.stubEnv('LIVE_RUNS_ENABLED', 'true');
-    limiter.mockImplementation(async () => 'ok');
-    vi.mocked(getLiveRunLimiter).mockReturnValue(limiter);
+    vi.stubEnv('NEXT_PUBLIC_HUB_URL', 'http://localhost:3100');
+    vi.stubEnv('PROJECT_ID', 'triage');
+    vi.mocked(claimLiveRun).mockResolvedValue({ ok: true });
   });
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.mocked(getModel).mockClear();
-    limiter.mockClear();
+    vi.mocked(claimLiveRun).mockReset();
   });
 
   it('returns 400 for a body that is not JSON, without calling the model', async () => {
@@ -58,38 +58,45 @@ describe('POST /api/run', () => {
 
   it('does not use up a visitor’s runs on a bad request', async () => {
     await post({ ticketId: 't99' });
-    expect(limiter).not.toHaveBeenCalled();
+    expect(claimLiveRun).not.toHaveBeenCalled();
   });
 
-  it('counts runs against the visitor’s IP address', async () => {
-    await post({ ticketId: 't3' }, { 'x-real-ip': '9.9.9.9' });
-    expect(limiter).toHaveBeenCalledWith('9.9.9.9');
-  });
-
-  it('returns 429 once a visitor has used their live runs for the day', async () => {
-    limiter.mockImplementation(async () => 'visitor-limit');
-    expect((await post({ ticketId: 't3' })).status).toBe(429);
+  it('refuses a live run without a pass, without calling the model', async () => {
+    expect((await post({ ticketId: 't3' }, { cookie: '' })).status).toBe(401);
     expect(getModel).not.toHaveBeenCalled();
   });
 
-  it('returns 503 once the site’s daily cap is reached', async () => {
-    limiter.mockImplementation(async () => 'site-limit');
-    expect((await post({ ticketId: 't3' })).status).toBe(503);
-    expect(getModel).not.toHaveBeenCalled();
-  });
-
-  it('refuses live runs when the rate limiter is not configured', async () => {
-    vi.mocked(getLiveRunLimiter).mockReturnValue(null);
-    expect((await post({ ticketId: 't3' })).status).toBe(503);
-    expect(getModel).not.toHaveBeenCalled();
-  });
-
-  it('refuses live runs when the rate limiter cannot be reached', async () => {
-    limiter.mockImplementation(async () => {
-      throw new Error('ECONNREFUSED');
+  it('asks the hub before every live run, with the pass, the ticket subject and the visitor’s location', async () => {
+    await post({ ticketId: 't3' }, { 'x-vercel-ip-city': 'Pune', 'x-vercel-ip-country': 'IN' });
+    expect(claimLiveRun).toHaveBeenCalledWith({
+      hubUrl: 'http://localhost:3100',
+      pass: 'test-pass',
+      project: 'triage',
+      detail: 'How do I export to CSV?',
+      city: 'Pune',
+      country: 'IN',
     });
-    expect((await post({ ticketId: 't3' })).status).toBe(503);
+  });
+
+  it.each([401, 403, 429, 503] as const)('passes on the hub’s %i without calling the model', async (status) => {
+    vi.mocked(claimLiveRun).mockResolvedValue({ ok: false, status, error: 'From the hub.' });
+    const res = await post({ ticketId: 't3' });
+    expect(res.status).toBe(status);
+    expect(await res.json()).toEqual({ error: 'From the hub.' });
     expect(getModel).not.toHaveBeenCalled();
+  });
+
+  it('reports a spent AI budget as its own error in the stream', async () => {
+    const { MockLanguageModelV4 } = await import('ai/test');
+    vi.mocked(getModel).mockReturnValueOnce(
+      new MockLanguageModelV4({
+        doGenerate: async () => {
+          throw Object.assign(new Error('Project budget exceeded.'), { statusCode: 402 });
+        },
+      }),
+    );
+    const lines = (await (await post({ ticketId: 't3' })).text()).trim().split('\n').map((l) => JSON.parse(l));
+    expect(lines.at(-1)).toMatchObject({ type: 'error', code: 'budget' });
   });
 
   it('returns 415 unless the body is declared as JSON, so other sites cannot skip the CORS preflight', async () => {

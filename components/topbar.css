@@ -1,0 +1,33 @@
+/* top bar v1. The same dark bar in every project and both themes, so separate apps read as one body of work. */
+.lw-topbar {
+  --lw-bg: #14201d;
+  --lw-ink: #e5ecea;
+  --lw-muted: #a0b0ab;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  padding: 8px 16px;
+  background: var(--lw-bg);
+  color: var(--lw-ink);
+  font: 13px/1.4 var(--font-instrument, ui-sans-serif), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.lw-topbar a { color: var(--lw-ink); text-decoration: none; }
+.lw-topbar a:hover { text-decoration: underline; }
+.lw-topbar .lw-name { font-weight: 600; }
+.lw-topbar .lw-viewer { margin-left: auto; color: var(--lw-muted); }
+.lw-topbar form { margin: 0; }
+.lw-topbar button {
+  font: inherit;
+  color: var(--lw-ink);
+  background: none;
+  border: 1px solid rgb(229 236 234 / 0.3);
+  border-radius: 6px;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+.lw-topbar button:hover { border-color: var(--lw-ink); }
+.lw-topbar :focus-visible { outline: 2px solid #45b5a3; outline-offset: 2px; }
+@media (max-width: 480px) {
+  .lw-topbar .lw-viewer { margin-left: 0; flex-basis: 100%; order: 3; }
+}

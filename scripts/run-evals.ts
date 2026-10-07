@@ -9,7 +9,7 @@ const cases = z.array(evalCaseSchema).parse(casesJson);
 const results: EvalResult[] = [];
 
 for (const c of cases) {
-  const { outcome, findings } = await runAgent({ ticket: c.ticket, model: getModel(), emit: () => {} });
+  const { outcome, findings } = await runAgent({ ticket: c.ticket, model: getModel(c.ticket.id), emit: () => {} });
   results.push({
     id: c.id,
     expected: c.expected,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LiveRunError, liveFailureNotice, liveFailureReason, noRecordingNotice, readRunStream } from '@/lib/client/run-stream';
+import { LiveRunError, liveFailureNotice, liveFailureReason, noRecordingNotice, readRunStream, renewUrl } from '@/lib/client/run-stream';
 import type { RunEvent } from '@/lib/types';
 
 const streamOf = (chunks: string[], status = 200) =>
@@ -37,16 +37,22 @@ describe('readRunStream', () => {
     await expect(collect(streamOf([line(startEv), line({ type: 'error', message: 'x', at: 1 })]))).rejects.toBeInstanceOf(LiveRunError);
   });
 
+  it('reports a spent AI budget as status 402', async () => {
+    await expect(collect(streamOf([line(startEv), line({ type: 'error', message: 'x', code: 'budget', at: 1 })]))).rejects.toMatchObject({ status: 402 });
+  });
+
   it('throws when the stream ends before an outcome', async () => {
     await expect(collect(streamOf([line(startEv)]))).rejects.toBeInstanceOf(LiveRunError);
   });
 });
 
 describe('liveFailureNotice', () => {
-  it('explains rate limits, the kill switch and other failures', () => {
-    expect(liveFailureNotice(new LiveRunError(429))).toBe('Live runs are rate-limited (5 per day). Showing the recorded run instead.');
-    expect(liveFailureNotice(new LiveRunError(503))).toBe('Live runs are paused right now. Showing the recorded run instead.');
-    expect(liveFailureNotice(new TypeError('fetch failed'))).toBe('The live run failed. Showing the recorded run instead.');
+  it('explains each reason a live run could not start', () => {
+    expect(liveFailureNotice(new LiveRunError(429))).toBe("You've used today's live runs. Showing the recorded run.");
+    expect(liveFailureNotice(new LiveRunError(403))).toBe('Your access has ended. Showing the recorded run.');
+    expect(liveFailureNotice(new LiveRunError(402))).toBe("This month's live-run budget is used up. Showing the recorded run.");
+    expect(liveFailureNotice(new LiveRunError(503))).toBe('Live runs are paused right now. Showing the recorded run.');
+    expect(liveFailureNotice(new TypeError('fetch failed'))).toBe('The live run failed. Showing the recorded run.');
   });
 });
 
@@ -55,8 +61,14 @@ describe('noRecordingNotice', () => {
     expect(noRecordingNotice()).toBe('No recording for this ticket yet. Try “Run live”.');
   });
   it('keeps the live failure reason when there is no recording to fall back to either', () => {
-    expect(noRecordingNotice(liveFailureReason(new LiveRunError(429)))).toBe(
-      'Live runs are rate-limited (5 per day). There is no recording for this ticket yet.',
+    expect(noRecordingNotice(liveFailureReason(new LiveRunError(429)))).toBe("You've used today's live runs. There is no recording for this ticket yet.");
+  });
+});
+
+describe('renewUrl', () => {
+  it('sends the browser through the hub and back to the same ticket', () => {
+    expect(renewUrl('http://localhost:3100', 'http://localhost:3000/?ticket=t4')).toBe(
+      'http://localhost:3100/renew?next=http%3A%2F%2Flocalhost%3A3000%2F%3Fticket%3Dt4',
     );
   });
 });

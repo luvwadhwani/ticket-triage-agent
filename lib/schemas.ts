@@ -97,7 +97,7 @@ export const runEventSchema = z.discriminatedUnion('type', [
     at: z.number(),
   }),
   z.object({ type: z.literal('outcome'), outcome: outcomeSchema, at: z.number() }),
-  z.object({ type: z.literal('error'), message: z.string(), at: z.number() }),
+  z.object({ type: z.literal('error'), message: z.string(), code: z.literal('budget').optional(), at: z.number() }),
 ]);
 
 export const recordedRunSchema = z.object({

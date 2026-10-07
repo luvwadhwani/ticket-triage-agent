@@ -73,8 +73,6 @@ a { color: var(--accent); }
 .intro { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; color: var(--muted); font-size: 13px; }
 .intro p { margin: 0; max-width: 78ch; }
 .intro b { color: var(--ink); font-weight: 600; }
-.intro .by { margin-left: auto; white-space: nowrap; color: var(--muted); text-decoration: none; }
-.intro .by:hover { color: var(--accent); }
 
 /* Product chrome */
 .topbar { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; }
@@ -193,7 +191,6 @@ a { color: var(--accent); }
   .workspace { grid-template-columns: minmax(0, 1fr); }
   .inbox ul { flex-direction: row; overflow-x: auto; scroll-snap-type: x mandatory; }
   .inbox li { flex: 0 0 82%; scroll-snap-align: start; }
-  .intro .by { margin-left: 0; }
   .topbar { flex-wrap: wrap; gap: 8px; }
   .topnav { margin-left: -10px; }
   .ticket { padding: 16px; }

@@ -9,7 +9,9 @@ function lastOutcome(rec: RecordedRun | null) {
   return e?.type === 'outcome' ? e.outcome : null;
 }
 
-export default function Home() {
+export default async function Home({ searchParams }: PageProps<'/'>) {
+  const sp = await searchParams;
+  const initialTicketId = typeof sp.ticket === 'string' && tickets.some((t) => t.id === sp.ticket) ? sp.ticket : tickets[0].id;
   const recordings = Object.fromEntries(tickets.map((t) => [t.id, getRecording(t.id)]));
   const views: TicketView[] = tickets.map((t) => ({
     ...t,
@@ -18,5 +20,5 @@ export default function Home() {
     status: inboxStatus(lastOutcome(recordings[t.id])),
   }));
   const docTitles = Object.fromEntries(helpDocs.map((d) => [d.id, d.title]));
-  return <Console tickets={views} recordings={recordings} docTitles={docTitles} repoUrl={process.env.NEXT_PUBLIC_REPO_URL ?? null} />;
+  return <Console tickets={views} recordings={recordings} docTitles={docTitles} repoUrl={process.env.NEXT_PUBLIC_REPO_URL ?? null} initialTicketId={initialTicketId} />;
 }

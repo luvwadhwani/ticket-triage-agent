@@ -14,13 +14,15 @@ export function Console({
   recordings,
   docTitles,
   repoUrl,
+  initialTicketId,
 }: {
   tickets: TicketView[];
   recordings: Record<string, RecordedRun | null>;
   docTitles: Record<string, string>;
   repoUrl: string | null;
+  initialTicketId: string;
 }) {
-  const [selectedId, setSelectedId] = useState(tickets[0].id);
+  const [selectedId, setSelectedId] = useState(initialTicketId);
   const getRecording = useCallback((id: string) => recordings[id] ?? null, [recordings]);
   const { state, start, dispatch } = useRun(getRecording);
 
@@ -37,9 +39,6 @@ export function Console({
           <b>A working AI agent that triages support tickets.</b> Pick a ticket and watch it look things up, draft a reply, and stop for you
           when a safety rule applies. Acme Cloud is fictional and nothing is ever sent.
         </p>
-        <a className="by" href="https://www.luvwadhwani.com">
-          Built by Luv Wadhwani
-        </a>
       </div>
 
       <header className="topbar">

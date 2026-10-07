@@ -1,10 +1,13 @@
 import { runAgent } from '@/lib/agent/run';
+import { claimLiveRun, isBudgetError, passFrom, visitorGeo } from '@/lib/hub';
 import { getModel } from '@/lib/model';
-import { clientIp, getLiveRunLimiter, type LimitResult } from '@/lib/rate-limit';
 import { checkOrigin, liveRunsEnabled, parseRunRequest } from '@/lib/run-request';
 import type { RunEvent } from '@/lib/types';
 
 export const maxDuration = 60;
+
+const hubUrl = () => new URL(process.env.NEXT_PUBLIC_HUB_URL || 'http://localhost:3100').origin;
+const projectId = () => process.env.PROJECT_ID || 'triage';
 
 export async function POST(req: Request): Promise<Response> {
   if (!liveRunsEnabled()) return Response.json({ error: 'Live runs are switched off.' }, { status: 503 });
@@ -15,8 +18,10 @@ export async function POST(req: Request): Promise<Response> {
   if (!parsed.ok) return Response.json({ error: parsed.error }, { status: 400 });
   const ticket = parsed.ticket;
 
-  const limited = await checkLimits(req);
-  if (limited) return Response.json({ error: limited.error }, { status: limited.status });
+  const pass = passFrom(req);
+  if (!pass) return Response.json({ error: 'Sign in again to continue.' }, { status: 401 });
+  const claim = await claimLiveRun({ hubUrl: hubUrl(), pass, project: projectId(), detail: ticket.subject, ...visitorGeo(req.headers) });
+  if (!claim.ok) return Response.json({ error: claim.error }, { status: claim.status });
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -29,10 +34,10 @@ export async function POST(req: Request): Promise<Response> {
         }
       };
       try {
-        await runAgent({ ticket, model: getModel(), emit: send, abortSignal: req.signal });
+        await runAgent({ ticket, model: getModel(ticket.id), emit: send, abortSignal: req.signal });
       } catch (err) {
         console.error('live run failed', err);
-        send({ type: 'error', message: 'The live run failed.', at: 0 });
+        send({ type: 'error', message: 'The live run failed.', ...(isBudgetError(err) ? { code: 'budget' as const } : {}), at: 0 });
       } finally {
         try {
           controller.close();
@@ -46,20 +51,4 @@ export async function POST(req: Request): Promise<Response> {
   return new Response(stream, {
     headers: { 'content-type': 'application/x-ndjson; charset=utf-8', 'cache-control': 'no-store' },
   });
-}
-
-/** Fails closed: without a working counter, live runs could spend the AI budget unchecked. */
-async function checkLimits(req: Request): Promise<{ status: 429 | 503; error: string } | null> {
-  const limiter = getLiveRunLimiter();
-  if (!limiter) return { status: 503, error: 'Live runs are paused: the rate limiter is not configured.' };
-  let result: LimitResult;
-  try {
-    result = await limiter(clientIp(req));
-  } catch (err) {
-    console.error('rate limiter unavailable', err);
-    return { status: 503, error: 'Live runs are paused: the rate limiter is unavailable.' };
-  }
-  if (result === 'visitor-limit') return { status: 429, error: 'You have used today’s live runs.' };
-  if (result === 'site-limit') return { status: 503, error: 'Live runs are paused for the rest of the day.' };
-  return null;
 }

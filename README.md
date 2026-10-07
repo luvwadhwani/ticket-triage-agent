@@ -2,7 +2,7 @@
 
 A working AI agent that triages customer support tickets for a fictional SaaS company, **Acme Cloud**. It looks things up with real tools, shows every step in plain language, and stops for a person whenever a safety rule applies.
 
-**Live demo:** see the link in the repo description · **Accuracy:** [evals/results.md](evals/results.md)
+**Live demo:** private. Access on request: [luv.wadhwani@icloud.com](mailto:luv.wadhwani@icloud.com) · **Accuracy:** [evals/results.md](evals/results.md)
 
 ## What it does
 
@@ -39,7 +39,7 @@ ticket ─▶ Claude (AI SDK 7 tool loop, max 8 steps) ─▶ 7 tools over fake 
 
 - Next.js 16, TypeScript and Tailwind, deployed on Vercel.
 - Claude Sonnet through the Vercel AI Gateway.
-- Every run is a stream of events. The page replays a **recorded real run** by default, so visiting costs nothing. **Run live** streams a fresh run. Live runs are limited to 5 per visitor per day plus a site-wide daily cap, counted in Redis (Vercel's firewall can only count over 10 minutes), under a monthly AI Gateway budget. If a live run can't start, the page says why and plays the recording instead.
+- Every run is a stream of events. The page replays a **recorded real run** by default, so browsing costs nothing. **Run live** streams a fresh run. The live demo is private: viewers sign in through Luv's client workspace, the workspace gives each invite a daily live-run allowance, and a monthly AI Gateway budget caps the total. If a live run can't start, the page says why and plays the recording instead.
 
 | Part | Where |
 |---|---|
@@ -47,7 +47,7 @@ ticket ─▶ Claude (AI SDK 7 tool loop, max 8 steps) ─▶ 7 tools over fake 
 | Tools (pure functions over `data/`) | `lib/tools/` |
 | Safety rules | `lib/policy.ts` |
 | Live run endpoint (NDJSON stream) | `app/api/run/route.ts` |
-| Live run limits | `lib/rate-limit.ts` |
+| Sign-in gate | `proxy.ts`, `lib/gate.ts` (shared with Luv's client workspace) |
 | Console UI | `components/` |
 
 ## Tests
@@ -65,7 +65,7 @@ npm run dev            # replays the committed recordings; no API key needed
 
 For live runs, recordings and evals, link the Vercel project and pull its environment (`npx vercel link && npx vercel env pull .env.local`), or set `AI_GATEWAY_API_KEY`.
 
-Live runs through the page also need `LIVE_RUNS_ENABLED=true` and an Upstash Redis database (the Vercel Marketplace integration sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`). Without Redis the endpoint refuses live runs rather than run them uncounted. `LIVE_RUNS_DAILY_CAP` sets the site-wide daily cap (default 10).
+The running demo sits behind Luv's client workspace. Locally, `npm run dev` needs the gate settings: `GATE_PUBLIC_KEY`, `NEXT_PUBLIC_HUB_URL` and `PROJECT_ID`. The test key in `tests/fixtures/keys.ts` works with the hub's local setup. Live runs also need `LIVE_RUNS_ENABLED=true`, and the workspace counts each viewer's runs.
 
 ## Out of scope, on purpose
 
