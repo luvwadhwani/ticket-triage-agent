@@ -1,4 +1,4 @@
-// top bar v5. The canonical copy lives in luvwadhwani/portfolio-hub (components/TopBar.tsx, BarMenu.tsx, ThemeSwitch.tsx,
+// top bar v6. The canonical copy lives in luvwadhwani/portfolio-hub (components/TopBar.tsx, BarMenu.tsx, ThemeSwitch.tsx,
 // topbar.css and lib/theme.ts). Copy all five unchanged into each project.
 import type { ReactNode } from 'react';
 import type { NavProject } from '@/lib/gate';
@@ -81,7 +81,7 @@ export function TopBar({ viewer, hubUrl, theme, current = null }: { viewer: TopB
       {viewer && viewer.projects.length > 0 && (
         <nav className="lw-tabs" aria-label="Workspace">
           {viewer.projects.map((p) => (
-            <a key={p.id} className="lw-tab" href={`${p.url}/`} aria-current={p.id === current ? 'page' : undefined}>
+            <a key={p.id} className="lw-tab" href={p.url} aria-current={p.id === current ? 'page' : undefined}>
               {GLYPHS[p.id] ?? GRID}
               {p.name}
             </a>

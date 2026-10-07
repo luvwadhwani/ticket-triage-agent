@@ -1,4 +1,4 @@
-// proxy v4. The canonical copy lives in luvwadhwani/portfolio-hub (templates/proxy.ts).
+// proxy v5. The canonical copy lives in luvwadhwani/portfolio-hub (templates/proxy.ts).
 // Copy it unchanged to a project's root as proxy.ts, next to lib/gate.ts.
 import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
 import { PASS_COOKIE, RENEWED_PARAM, gateDecision, gateEnv, navHeader, sendVisit, stopPageHtml, verifyPass } from '@/lib/gate';
@@ -11,7 +11,7 @@ export async function proxy(req: NextRequest, event: NextFetchEvent) {
     { method: req.method, url: req.nextUrl.href, renewed: req.nextUrl.searchParams.has(RENEWED_PARAM) },
     verified,
     env.hubUrl,
-    env.canonicalOrigin,
+    env.publicOrigin,
   );
   if (decision.kind === 'redirect') return NextResponse.redirect(decision.location, 307);
   if (decision.kind === 'deny') return NextResponse.json({ error: decision.error }, { status: decision.status });
@@ -33,5 +33,7 @@ export async function proxy(req: NextRequest, event: NextFetchEvent) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff2?)$).*)'],
+  // '/' on its own: with a basePath, Next prefixes each pattern with it, and the second one alone would miss the
+  // project's front page (/triage) while still matching /triage/anything.
+  matcher: ['/', '/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff2?)$).*)'],
 };

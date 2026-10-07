@@ -1,4 +1,4 @@
-// gate v5. The canonical copy lives in luvwadhwani/portfolio-hub (lib/gate.ts) with its tests.
+// gate v6. The canonical copy lives in luvwadhwani/portfolio-hub (lib/gate.ts) with its tests.
 // Copy it unchanged into each project, next to proxy.ts (templates/proxy.ts in the hub).
 import { errors, importSPKI, jwtVerify } from 'jose';
 
@@ -40,7 +40,8 @@ export interface GateEnv {
   publicKey: string;
   hubUrl: string;
   projectId: string;
-  canonicalOrigin: string | null;
+  /** Where people reach this project (the hub's address, which forwards /<id> here); null when it is reached directly. */
+  publicOrigin: string | null;
 }
 
 const keys = new Map<string, ReturnType<typeof importSPKI>>();
@@ -73,7 +74,7 @@ export async function verifyPass(token: string | undefined, publicKeyPem: string
   }
 }
 
-/** Well-formed entries only, each reduced to its origin; anything else (or a pass from before gate v5) gives []. */
+/** Well-formed entries only, each reduced to its origin and path; anything else (or a pass from before gate v5) gives []. */
 export function parseNav(value: unknown): NavProject[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((entry) => {
@@ -82,7 +83,7 @@ export function parseNav(value: unknown): NavProject[] {
     if (typeof id !== 'string' || typeof name !== 'string' || typeof url !== 'string') return [];
     try {
       const u = new URL(url);
-      return u.protocol === 'https:' || u.protocol === 'http:' ? [{ id, name, url: u.origin }] : [];
+      return u.protocol === 'https:' || u.protocol === 'http:' ? [{ id, name, url: u.origin + u.pathname.replace(/\/+$/, '') }] : [];
     } catch {
       return [];
     }
@@ -106,17 +107,16 @@ export function gateDecision(
   req: { method: string; url: string; renewed: boolean },
   verified: Verified,
   hubUrl: string,
-  canonicalOrigin?: string | null,
+  publicOrigin?: string | null,
 ): GateDecision {
   const url = new URL(req.url);
-  if (canonicalOrigin && url.origin !== canonicalOrigin) {
-    return { kind: 'redirect', location: `${canonicalOrigin}${url.pathname}${url.search}` };
-  }
-  const isPage = (req.method === 'GET' || req.method === 'HEAD') && !url.pathname.startsWith('/api/');
+  // Behind the hub the browser is on the hub's address, so every address handed back uses it, never this host.
+  const outward = (u: URL) => (publicOrigin ? `${publicOrigin}${u.pathname}${u.search}` : u.href);
+  const isPage = (req.method === 'GET' || req.method === 'HEAD') && !url.pathname.includes('/api/');
   if (verified.ok) {
     if (isPage && url.searchParams.has(RENEWED_PARAM)) {
       url.searchParams.delete(RENEWED_PARAM);
-      return { kind: 'redirect', location: url.href };
+      return { kind: 'redirect', location: outward(url) };
     }
     return { kind: 'allow', viewer: verified.viewer };
   }
@@ -124,10 +124,10 @@ export function gateDecision(
   url.searchParams.delete(RENEWED_PARAM);
   // The hub just renewed and sent us back, yet the pass still doesn't work here (blocked cookie, wrong
   // key, project not set up in the hub): stop with plain words instead of redirecting forever.
-  if (req.renewed) return { kind: 'stop', reason: verified.reason, retry: url.href };
+  if (req.renewed) return { kind: 'stop', reason: verified.reason, retry: outward(url) };
   // The gate marks the way back itself, so it never depends on the hub recognising this project.
   url.searchParams.set(RENEWED_PARAM, '1');
-  return { kind: 'redirect', location: `${hubUrl}/renew?next=${encodeURIComponent(url.href)}` };
+  return { kind: 'redirect', location: `${hubUrl}/renew?next=${encodeURIComponent(outward(url))}` };
 }
 
 const STOP_TEXT: Record<FailReason, string> = {
@@ -159,12 +159,12 @@ export function gateEnv(env: Record<string, string | undefined> = process.env): 
     throw new Error('The gate needs GATE_PUBLIC_KEY, NEXT_PUBLIC_HUB_URL and PROJECT_ID.');
   }
   const hub = new URL(hubUrl);
-  const canonicalOrigin = env.PUBLIC_ORIGIN ? new URL(env.PUBLIC_ORIGIN).origin : null;
-  // Anywhere real (a production origin, or a hub on https), the published test key would let anyone in.
-  if ((canonicalOrigin || hub.protocol === 'https:') && isPublishedTestKey(publicKey)) {
+  const publicOrigin = env.PUBLIC_ORIGIN ? new URL(env.PUBLIC_ORIGIN).origin : null;
+  // Anywhere real (anything on https), the published test key would let anyone in.
+  if ((publicOrigin?.startsWith('https:') || hub.protocol === 'https:') && isPublishedTestKey(publicKey)) {
     throw new Error('GATE_PUBLIC_KEY is the published test key. Use the key printed by `npm run secrets` in the hub.');
   }
-  return { publicKey, hubUrl: hub.origin, projectId, canonicalOrigin };
+  return { publicKey, hubUrl: hub.origin, projectId, publicOrigin };
 }
 
 /** Tells the hub a page was opened. Fire-and-forget: a lost log line must never block the visitor. */

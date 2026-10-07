@@ -11,7 +11,7 @@ const decision = (page: Page) => page.getByRole('region', { name: 'Your decision
 test.beforeEach(async ({ context, baseURL }) => addPass(context, baseURL!));
 
 test('ticket 1: the refund rule stops the agent, and approving shows what would happen', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/triage');
   await pickTicket(page, 'Charged twice this month');
   await expect(ticket(page).getByText('Classified the ticket')).toBeVisible();
   await expect(decision(page).getByText('Needs your approval')).toBeVisible({ timeout: 15_000 });
@@ -22,19 +22,19 @@ test('ticket 1: the refund rule stops the agent, and approving shows what would 
 });
 
 test('ticket 3: a how-to question is ready to send', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/triage');
   await pickTicket(page, 'How do I export to CSV?');
   await expect(decision(page).getByText('Ready to send')).toBeVisible({ timeout: 15_000 });
 });
 
 test('ticket 4: a possible outage is escalated to Engineering', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/triage');
   await pickTicket(page, 'Your API is down!!');
   await expect(decision(page).getByText('Escalated to Engineering')).toBeVisible({ timeout: 15_000 });
 });
 
 test('the raw tool call is one click away for technical visitors', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/triage');
   await expect(decision(page).getByText('Needs your approval')).toBeVisible({ timeout: 15_000 });
   await ticket(page).getByRole('button', { name: 'View tool call' }).first().click();
   await expect(ticket(page).getByText(/classify_ticket\(/)).toBeVisible();
@@ -46,7 +46,7 @@ for (const size of [
 ]) {
   test(`panes sit close together with no stretched gaps at ${size.width}px`, async ({ page }) => {
     await page.setViewportSize(size); // taller than the content, so stretched rows would show
-    await page.goto('/');
+    await page.goto('/triage');
     await expect(decision(page).getByText('Needs your approval')).toBeVisible({ timeout: 15_000 });
     const [inbox, run, dec] = await Promise.all(
       ['Inbox', 'Ticket', 'Your decision'].map(async (name) => (await page.getByRole('region', { name }).boundingBox())!),
@@ -60,7 +60,7 @@ for (const size of [
 }
 
 test('the accuracy page is one click from the console', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/triage');
   await page.getByRole('link', { name: 'Accuracy' }).click();
   await expect(page.getByRole('heading', { name: 'How accurate is it?' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Back to the demo' })).toBeVisible();
@@ -68,7 +68,7 @@ test('the accuracy page is one click from the console', async ({ page }) => {
 
 test('a live run past the daily allowance falls back to the recording and says why', async ({ page }) => {
   await page.route('**/api/run', (route) => route.fulfill({ status: 429, body: '' }));
-  await page.goto('/');
+  await page.goto('/triage');
   await expect(decision(page).getByText('Needs your approval')).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Run live' }).click();
   await expect(page.getByText("You've used today's live runs. Showing the recorded run.")).toBeVisible();
@@ -78,15 +78,17 @@ test('a live run past the daily allowance falls back to the recording and says w
 test('an expired pass during a live run goes through the hub and comes back to the same ticket', async ({ page }) => {
   await page.route('**/api/run', (route) => route.fulfill({ status: 401, body: '' }));
   await page.route('http://localhost:3100/**', (route) => route.fulfill({ status: 200, body: 'hub' }));
-  await page.goto('/');
+  await page.goto('/triage');
   await pickTicket(page, 'Your API is down!!');
+  const run = page.waitForRequest('**/api/run');
   await page.getByRole('button', { name: 'Run live' }).click();
+  expect((await run).url()).toBe('http://localhost:3000/triage/api/run'); // the demo's API lives under its path
   await page.waitForURL(/localhost:3100\/renew\?next=/);
   expect(decodeURIComponent(page.url())).toContain('ticket=t4');
 });
 
 test('the shared top bar names the viewer and links back to the projects', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/triage');
   const bar = page.getByRole('banner');
   await expect(bar.getByRole('button', { name: `Signed in as ${TEST_VIEWER}` })).toBeVisible();
   await expect(bar.getByRole('navigation', { name: 'Workspace' }).getByRole('link')).toHaveText(['Ticket triage agent', 'QA agent', 'Digital Twin Studio']);
@@ -99,7 +101,7 @@ test('the shared top bar names the viewer and links back to the projects', async
 
 test("a prospect can't make the Admin link appear by sending the admin header themselves", async ({ page }) => {
   await page.setExtraHTTPHeaders({ 'x-lw-admin': '1' });
-  await page.goto('/');
+  await page.goto('/triage');
   const bar = page.getByRole('banner');
   await expect(bar.getByRole('button', { name: `Signed in as ${TEST_VIEWER}` })).toBeVisible();
   await openAccountMenu(page);
@@ -108,14 +110,14 @@ test("a prospect can't make the Admin link appear by sending the admin header th
 });
 
 test('each page has one banner landmark, the shared top bar', async ({ page }) => {
-  for (const path of ['/', '/evals']) {
+  for (const path of ['/triage', '/triage/evals']) {
     await page.goto(path);
     await expect(page.getByRole('banner')).toHaveCount(1);
   }
 });
 
 test('the colour switch is remembered across a reload', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/triage');
   await chooseColour(page, 'Dark');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.reload();
@@ -123,9 +125,9 @@ test('the colour switch is remembered across a reload', async ({ page }) => {
 });
 
 test('without a pass, pages go to the hub and live runs are refused', async ({ request }) => {
-  const page = await request.get('/', { maxRedirects: 0 });
+  const page = await request.get('/triage', { maxRedirects: 0 });
   expect(page.status()).toBe(307);
-  expect(page.headers().location).toMatch(/^http:\/\/localhost:3100\/renew\?next=http%3A%2F%2Flocalhost%3A3000%2F/);
-  const run = await request.post('/api/run', { data: { ticketId: 't1' }, maxRedirects: 0 });
+  expect(page.headers().location).toMatch(/^http:\/\/localhost:3100\/renew\?next=http%3A%2F%2Flocalhost%3A3000%2Ftriage/);
+  const run = await request.post('/triage/api/run', { data: { ticketId: 't1' }, maxRedirects: 0 });
   expect(run.status()).toBe(401);
 });

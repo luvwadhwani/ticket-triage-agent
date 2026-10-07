@@ -6,9 +6,9 @@ export const TEST_VIEWER = 'Test Viewer';
 
 /** The projects a hub pass lists, for the top bar's tabs. */
 export const TEST_NAV = [
-  { id: 'triage', name: 'Ticket triage agent', url: 'https://triage.luvwadhwani.com' },
-  { id: 'qa', name: 'QA agent', url: 'https://qa.luvwadhwani.com' },
-  { id: 'twin', name: 'Digital Twin Studio', url: 'https://twin.luvwadhwani.com' },
+  { id: 'triage', name: 'Ticket triage agent', url: 'https://work.luvwadhwani.com/triage' },
+  { id: 'qa', name: 'QA agent', url: 'https://work.luvwadhwani.com/qa' },
+  { id: 'twin', name: 'Digital Twin Studio', url: 'https://work.luvwadhwani.com/twin' },
 ];
 
 /** Signs a test-only pass with the fixture key, the way the hub would, and gives it to the browser. */

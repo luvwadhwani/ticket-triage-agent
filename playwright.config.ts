@@ -15,7 +15,7 @@ export default defineConfig({
     ? undefined
     : {
         command: 'npm run build && npm run start',
-        url: 'http://localhost:3000/api/run', // every page redirects to the hub; the gate answers API paths with a plain 401
+        url: 'http://localhost:3000/triage/api/run', // every page redirects to the hub; the gate answers API paths with a plain 401
         env: { GATE_PUBLIC_KEY: TEST_PUBLIC_KEY, NEXT_PUBLIC_HUB_URL: 'http://localhost:3100', PROJECT_ID: 'triage' },
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,

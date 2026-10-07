@@ -3,6 +3,7 @@
 import { useCallback, useReducer, useRef } from 'react';
 import { initialRunState, runReducer, type RunSource } from '@/lib/client/run-state';
 import { LiveRunError, liveFailureNotice, liveFailureReason, noRecordingNotice, readRunStream, renewUrl } from '@/lib/client/run-stream';
+import { BASE_PATH } from '@/lib/base-path';
 import { replay } from '@/lib/replay';
 import type { RecordedRun } from '@/lib/types';
 
@@ -31,7 +32,7 @@ export function useRun(getRecording: (ticketId: string) => RecordedRun | null) {
       try {
         if (source === 'live') {
           try {
-            const res = await fetch('/api/run', {
+            const res = await fetch(`${BASE_PATH}/api/run`, {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({ ticketId }),

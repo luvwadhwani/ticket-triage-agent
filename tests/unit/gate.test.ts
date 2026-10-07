@@ -73,7 +73,9 @@ describe('the projects in a pass', () => {
   it('keep only well-formed entries with an http(s) address', () => {
     expect(parseNav([TRIAGE, { id: 'x', name: 'Bad', url: 'javascript:alert(1)' }, { id: 'y', name: 7, url: 'https://y.luvwadhwani.com' }, 'junk', null])).toEqual([TRIAGE]);
     expect(parseNav({ not: 'a list' })).toEqual([]);
-    expect(parseNav([{ ...TRIAGE, url: 'https://triage.luvwadhwani.com/some/path?x=1' }])).toEqual([TRIAGE]);
+    expect(parseNav([{ id: 'triage', name: 'Ticket triage agent', url: 'https://work.luvwadhwani.com/triage/?x=1#top' }])).toEqual([
+      { id: 'triage', name: 'Ticket triage agent', url: 'https://work.luvwadhwani.com/triage' },
+    ]);
   });
 
   it('travel to the page in a header and back, including names that are not plain ASCII', () => {
@@ -135,10 +137,34 @@ describe('gateDecision', () => {
     });
   });
 
-  it('moves visitors from the raw vercel.app address to the canonical domain first', () => {
-    expect(gateDecision(page('https://ticket-triage-agent-seven.vercel.app/evals'), allowed, hub, 'https://triage.luvwadhwani.com')).toEqual({
-      kind: 'redirect',
-      location: 'https://triage.luvwadhwani.com/evals',
+  describe('behind the hub, where people reach the project on the public address', () => {
+    const PUBLIC = 'https://work.luvwadhwani.com';
+    const upstream = 'https://triage.luvwadhwani.com/triage';
+
+    it('sends a page without a pass to renew, with the way back on the public address', () => {
+      expect(gateDecision(page(`${upstream}/evals?x=1`), missing, hub, PUBLIC)).toEqual({
+        kind: 'redirect',
+        location: `https://work.luvwadhwani.com/renew?next=${encodeURIComponent('https://work.luvwadhwani.com/triage/evals?x=1&lw_renewed=1')}`,
+      });
+    });
+
+    it('drops the renewal marker without leaving the public address', () => {
+      expect(gateDecision(page(`${upstream}?ticket=t4&lw_renewed=1`, true), allowed, hub, PUBLIC)).toEqual({
+        kind: 'redirect',
+        location: 'https://work.luvwadhwani.com/triage?ticket=t4',
+      });
+    });
+
+    it('offers "Try again" on the public address', () => {
+      expect(gateDecision(page(`${upstream}?lw_renewed=1`, true), missing, hub, PUBLIC)).toMatchObject({ kind: 'stop', retry: 'https://work.luvwadhwani.com/triage' });
+    });
+
+    it("answers the project's own API under its prefix with a 401, not a redirect", () => {
+      expect(gateDecision({ method: 'POST', url: `${upstream}/api/run`, renewed: false }, missing, hub, PUBLIC).kind).toBe('deny');
+    });
+
+    it('serves a request that reached it on another host, instead of bouncing it between hosts', () => {
+      expect(gateDecision(page('https://ticket-triage-agent-seven.vercel.app/triage'), allowed, hub, PUBLIC)).toEqual({ kind: 'allow', viewer: allowed.viewer });
     });
   });
 });
@@ -168,7 +194,7 @@ describe('gateEnv', () => {
   it('reads the project settings and turns escaped newlines in the key back into real ones', () => {
     expect(
       gateEnv({ GATE_PUBLIC_KEY: 'line1\\nline2', NEXT_PUBLIC_HUB_URL: 'https://work.luvwadhwani.com/', PROJECT_ID: 'triage', PUBLIC_ORIGIN: '' }),
-    ).toEqual({ publicKey: 'line1\nline2', hubUrl: 'https://work.luvwadhwani.com', projectId: 'triage', canonicalOrigin: null });
+    ).toEqual({ publicKey: 'line1\nline2', hubUrl: 'https://work.luvwadhwani.com', projectId: 'triage', publicOrigin: null });
   });
 
   it('refuses the published test key wherever it could matter, since anyone can sign passes with it', () => {
@@ -176,6 +202,7 @@ describe('gateEnv', () => {
     expect(gateEnv(local).publicKey).toBe(TEST_PUBLIC_KEY);
     expect(() => gateEnv({ ...local, PUBLIC_ORIGIN: 'https://triage.luvwadhwani.com' })).toThrow('test key');
     expect(() => gateEnv({ ...local, NEXT_PUBLIC_HUB_URL: 'https://work.luvwadhwani.com' })).toThrow('test key');
+    expect(gateEnv({ ...local, PUBLIC_ORIGIN: 'http://localhost:3100' }).publicOrigin).toBe('http://localhost:3100');
   });
 
   it('refuses to run without its settings', () => {
