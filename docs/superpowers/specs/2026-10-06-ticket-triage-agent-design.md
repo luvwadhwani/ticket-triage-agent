@@ -161,8 +161,6 @@ Separate items, each with its own spec later:
 
 - **Slack → PR pipeline:** a real, recorded run on this repo: a Slack request → coding agent →
   tests → GitHub PR → human review.
-- **QA agent case study:** an anonymized write-up and diagram of Luv's QA agent (per-ticket parallel
-  agents, cost cut from $2.99 to $0.26 per ticket). No code, no screenshots.
 
 ## 10. Needs Luv (at the time, not now)
 
