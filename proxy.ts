@@ -1,7 +1,7 @@
-// proxy v1. The canonical copy lives in luvwadhwani/portfolio-hub (templates/proxy.ts).
+// proxy v2. The canonical copy lives in luvwadhwani/portfolio-hub (templates/proxy.ts).
 // Copy it unchanged to a project's root as proxy.ts, next to lib/gate.ts.
 import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
-import { COOKIE_BLOCKED_HTML, PASS_COOKIE, RENEWED_PARAM, gateDecision, gateEnv, sendVisit, verifyPass } from '@/lib/gate';
+import { PASS_COOKIE, RENEWED_PARAM, gateDecision, gateEnv, sendVisit, stopPageHtml, verifyPass } from '@/lib/gate';
 
 export async function proxy(req: NextRequest, event: NextFetchEvent) {
   const env = gateEnv();
@@ -15,8 +15,11 @@ export async function proxy(req: NextRequest, event: NextFetchEvent) {
   );
   if (decision.kind === 'redirect') return NextResponse.redirect(decision.location, 307);
   if (decision.kind === 'deny') return NextResponse.json({ error: decision.error }, { status: decision.status });
-  if (decision.kind === 'cookie-blocked') {
-    return new NextResponse(COOKIE_BLOCKED_HTML, { status: 400, headers: { 'content-type': 'text/html; charset=utf-8' } });
+  if (decision.kind === 'stop') {
+    return new NextResponse(stopPageHtml(decision.reason, decision.retry, env.hubUrl), {
+      status: 400,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+    });
   }
   if (pass && req.headers.get('sec-fetch-dest') === 'document') {
     event.waitUntil(sendVisit(env, pass, req.nextUrl, req.headers).catch(() => undefined));

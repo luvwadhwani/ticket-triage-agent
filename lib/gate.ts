@@ -1,4 +1,4 @@
-// gate v1. The canonical copy lives in luvwadhwani/portfolio-hub (lib/gate.ts) with its tests.
+// gate v2. The canonical copy lives in luvwadhwani/portfolio-hub (lib/gate.ts) with its tests.
 // Copy it unchanged into each project, next to proxy.ts (templates/proxy.ts in the hub).
 import { errors, importSPKI, jwtVerify } from 'jose';
 
@@ -15,11 +15,13 @@ export interface Viewer {
 
 export type Verified = { ok: true; viewer: Viewer } | { ok: false; reason: 'missing' | 'invalid' | 'expired' | 'not-in-project' };
 
+export type FailReason = Extract<Verified, { ok: false }>['reason'];
+
 export type GateDecision =
   | { kind: 'allow'; viewer: Viewer }
   | { kind: 'redirect'; location: string }
   | { kind: 'deny'; status: 401; error: string }
-  | { kind: 'cookie-blocked' };
+  | { kind: 'stop'; reason: FailReason; retry: string };
 
 export interface GateEnv {
   publicKey: string;
@@ -77,13 +79,27 @@ export function gateDecision(
     return { kind: 'allow', viewer: verified.viewer };
   }
   if (!isPage) return { kind: 'deny', status: 401, error: 'Sign in again to continue.' };
-  // The hub just issued a pass and sent us back, yet none arrived: the browser is dropping the cookie.
-  if (req.renewed && verified.reason === 'missing') return { kind: 'cookie-blocked' };
   url.searchParams.delete(RENEWED_PARAM);
+  // The hub just renewed and sent us back, yet the pass still doesn't work here (blocked cookie, wrong
+  // key, project not set up in the hub): stop with plain words instead of redirecting forever.
+  if (req.renewed) return { kind: 'stop', reason: verified.reason, retry: url.href };
+  // The gate marks the way back itself, so it never depends on the hub recognising this project.
+  url.searchParams.set(RENEWED_PARAM, '1');
   return { kind: 'redirect', location: `${hubUrl}/renew?next=${encodeURIComponent(url.href)}` };
 }
 
-export const COOKIE_BLOCKED_HTML = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign-in cookie blocked</title><p style="font:16px/1.5 system-ui,sans-serif;margin:48px auto;max-width:34em;padding:0 16px">Your browser didn't keep the sign-in cookie, so this page can't open. Allow cookies for luvwadhwani.com and try again.</p>`;
+const STOP_TEXT: Record<FailReason, string> = {
+  missing: "Your browser didn't keep the sign-in cookie, so this page can't open. Allow cookies for luvwadhwani.com and try again.",
+  'not-in-project': "This project isn't part of your access.",
+  invalid: "This page couldn't confirm your sign-in. Try again, or ask Luv to check your access.",
+  expired: "This page couldn't confirm your sign-in. Try again, or ask Luv to check your access.",
+};
+
+const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+export function stopPageHtml(reason: FailReason, retry: string, hubUrl: string): string {
+  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Can't open this page</title><div style="font:16px/1.5 system-ui,sans-serif;margin:48px auto;max-width:34em;padding:0 16px"><p>${STOP_TEXT[reason]}</p><p><a href="${escapeHtml(retry)}">Try again</a> · <a href="${escapeHtml(hubUrl)}">All projects</a></p></div>`;
+}
 
 export function readCookie(cookieHeader: string | null, name: string): string | undefined {
   for (const part of (cookieHeader ?? '').split(';')) {

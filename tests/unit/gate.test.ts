@@ -1,6 +1,6 @@
 import { SignJWT, importPKCS8 } from 'jose';
 import { describe, expect, it } from 'vitest';
-import { gateDecision, gateEnv, readCookie, verifyPass, type Verified } from '@/lib/gate';
+import { gateDecision, gateEnv, readCookie, stopPageHtml, verifyPass, type Verified } from '@/lib/gate';
 import { TEST_PRIVATE_KEY, TEST_PUBLIC_KEY } from '../fixtures/keys';
 
 const now = new Date('2026-10-07T10:00:00Z');
@@ -52,10 +52,10 @@ describe('gateDecision', () => {
     expect(gateDecision(page('https://triage.luvwadhwani.com/'), allowed, hub)).toEqual({ kind: 'allow', viewer: allowed.viewer });
   });
 
-  it('sends a page request without a valid pass to the hub to renew it', () => {
+  it('sends a page request without a valid pass to the hub to renew it, marking the way back as renewed', () => {
     expect(gateDecision(page('https://triage.luvwadhwani.com/evals?x=1'), missing, hub)).toEqual({
       kind: 'redirect',
-      location: 'https://work.luvwadhwani.com/renew?next=https%3A%2F%2Ftriage.luvwadhwani.com%2Fevals%3Fx%3D1',
+      location: `https://work.luvwadhwani.com/renew?next=${encodeURIComponent('https://triage.luvwadhwani.com/evals?x=1&lw_renewed=1')}`,
     });
   });
 
@@ -69,7 +69,19 @@ describe('gateDecision', () => {
   });
 
   it('stops instead of looping when the hub just renewed but the cookie never arrived', () => {
-    expect(gateDecision(page('https://triage.luvwadhwani.com/?lw_renewed=1', true), missing, hub)).toEqual({ kind: 'cookie-blocked' });
+    expect(gateDecision(page('https://triage.luvwadhwani.com/?lw_renewed=1', true), missing, hub)).toEqual({
+      kind: 'stop',
+      reason: 'missing',
+      retry: 'https://triage.luvwadhwani.com/',
+    });
+  });
+
+  it.each(['invalid', 'expired', 'not-in-project'] as const)('stops instead of looping when a just-renewed pass is still %s here', (reason) => {
+    expect(gateDecision(page('https://triage.luvwadhwani.com/evals?lw_renewed=1', true), { ok: false, reason }, hub)).toEqual({
+      kind: 'stop',
+      reason,
+      retry: 'https://triage.luvwadhwani.com/evals',
+    });
   });
 
   it('drops the renewal marker from the address once the pass works', () => {
@@ -84,6 +96,20 @@ describe('gateDecision', () => {
       kind: 'redirect',
       location: 'https://triage.luvwadhwani.com/evals',
     });
+  });
+});
+
+describe('stopPageHtml', () => {
+  it('explains the problem in plain words and offers a way to try again', () => {
+    const blocked = stopPageHtml('missing', 'https://triage.luvwadhwani.com/', 'https://work.luvwadhwani.com');
+    expect(blocked).toContain("Your browser didn't keep the sign-in cookie");
+    expect(blocked).toContain('href="https://triage.luvwadhwani.com/">Try again</a>');
+    expect(stopPageHtml('not-in-project', 'https://triage.luvwadhwani.com/', 'https://work.luvwadhwani.com')).toContain("This project isn't part of your access.");
+    expect(stopPageHtml('invalid', 'https://triage.luvwadhwani.com/', 'https://work.luvwadhwani.com')).toContain("This page couldn't confirm your sign-in.");
+  });
+
+  it('escapes the retry address so it cannot inject markup', () => {
+    expect(stopPageHtml('missing', 'https://triage.luvwadhwani.com/?q="><script>', 'https://work.luvwadhwani.com')).not.toContain('"><script>');
   });
 });
 
