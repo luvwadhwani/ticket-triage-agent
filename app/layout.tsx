@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Mono, Instrument_Sans } from 'next/font/google';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { TopBar } from '@/components/TopBar';
+import { THEME_COOKIE, parseTheme, themeAttribute } from '@/lib/theme';
 import './globals.css';
 
 const instrument = Instrument_Sans({ subsets: ['latin'], variable: '--font-instrument', display: 'swap' });
@@ -14,7 +15,8 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
-  const raw = (await headers()).get('x-lw-viewer');
+  const h = await headers();
+  const raw = h.get('x-lw-viewer');
   let viewer = 'Guest';
   if (raw) {
     try {
@@ -23,10 +25,11 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
       viewer = raw;
     }
   }
+  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
   return (
-    <html lang="en" className={`${instrument.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${instrument.variable} ${plexMono.variable}`} data-theme={themeAttribute(theme)}>
       <body>
-        <TopBar viewerName={viewer} hubUrl={process.env.NEXT_PUBLIC_HUB_URL ?? ''} />
+        <TopBar viewer={{ name: viewer, admin: h.get('x-lw-admin') === '1' }} hubUrl={process.env.NEXT_PUBLIC_HUB_URL ?? ''} theme={theme} />
         {children}
       </body>
     </html>

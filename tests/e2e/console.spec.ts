@@ -84,11 +84,20 @@ test('an expired pass during a live run goes through the hub and comes back to t
   expect(decodeURIComponent(page.url())).toContain('ticket=t4');
 });
 
-test('the shared top bar names the viewer and links back to all projects', async ({ page }) => {
+test('the shared top bar names the viewer and links back to the projects', async ({ page }) => {
   await page.goto('/');
-  const bar = page.getByRole('navigation', { name: "Luv Wadhwani's workspace" });
+  const bar = page.getByRole('banner');
   await expect(bar.getByText(`Signed in as ${TEST_VIEWER}`)).toBeVisible();
-  await expect(bar.getByRole('link', { name: 'All projects' })).toHaveAttribute('href', 'http://localhost:3100');
+  await expect(bar.getByRole('link', { name: 'Projects' })).toHaveAttribute('href', 'http://localhost:3100/');
+  await expect(bar.getByRole('link', { name: 'Admin' })).toHaveCount(0);
+});
+
+test('the colour switch is remembered across a reload', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('banner').getByRole('button', { name: 'Dark' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
 
 test('without a pass, pages go to the hub and live runs are refused', async ({ request }) => {

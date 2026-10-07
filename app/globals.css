@@ -2,49 +2,29 @@
 
 /* Layout: helpdesk console. Inbox rail | ticket thread + agent activity | decision with a triage tag */
 :root {
-  --bg: #f2f5f4;
-  --surface: #ffffff;
-  --surface-2: #f7f9f8;
-  --ink: #14201d;
-  --muted: #5b6965;
-  --faint: #7d8a86;
-  --line: #dde4e1;
-  --accent: #0f6e63;
-  --accent-ink: #ffffff;
-  --accent-soft: #e1efec;
-  --ok: #1b7a45;
-  --ok-soft: #e2f3e8;
-  --warn: #9a5c06;
-  --warn-soft: #fbefd9;
-  --danger: #b2361a;
-  --danger-soft: #fbe5de;
-  --shadow: 0 1px 2px rgb(20 32 29 / 0.06), 0 8px 24px rgb(20 32 29 / 0.06);
+  --bg: #f6f8fb; --surface: #ffffff; --surface-2: #f1f5f9; --ink: #0f172a; --muted: #475569; --faint: #64748b; --line: #e2e8f0;
+  --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #eaf1fe;
+  --ok: #15803d; --ok-soft: #e7f6ec; --warn: #a16207; --warn-soft: #fdf3dc; --danger: #b91c1c; --danger-soft: #fdecec;
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px rgb(15 23 42 / 0.06);
   --font-ui: var(--font-instrument), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-code: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
   color-scheme: light;
 }
-
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e1413;
-    --surface: #151d1b;
-    --surface-2: #1a2321;
-    --ink: #e5ecea;
-    --muted: #a0b0ab;
-    --faint: #7a8a85;
-    --line: #25312e;
-    --accent: #45b5a3;
-    --accent-ink: #062019;
-    --accent-soft: #12302b;
-    --ok: #57c78a;
-    --ok-soft: #12301f;
-    --warn: #e5ab4c;
-    --warn-soft: #33260e;
-    --danger: #f2805f;
-    --danger-soft: #3a1b12;
+  :root:not([data-theme="light"]) {
+    --bg: #0b1220; --surface: #111a2e; --surface-2: #16213a; --ink: #e2e8f0; --muted: #94a3b8; --faint: #7c8aa0; --line: #1e293b;
+    --accent: #60a5fa; --accent-ink: #06122a; --accent-soft: #132447;
+    --ok: #4ade80; --ok-soft: #0f2a1b; --warn: #fbbf24; --warn-soft: #2e2410; --danger: #f87171; --danger-soft: #3a1517;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.25);
     color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1220; --surface: #111a2e; --surface-2: #16213a; --ink: #e2e8f0; --muted: #94a3b8; --faint: #7c8aa0; --line: #1e293b;
+  --accent: #60a5fa; --accent-ink: #06122a; --accent-soft: #132447;
+  --ok: #4ade80; --ok-soft: #0f2a1b; --warn: #fbbf24; --warn-soft: #2e2410; --danger: #f87171; --danger-soft: #3a1517;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.25);
+  color-scheme: dark;
 }
 
 /* Tailwind utilities (used by /evals) read the same tokens */

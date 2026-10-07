@@ -1,4 +1,4 @@
-// gate v2. The canonical copy lives in luvwadhwani/portfolio-hub (lib/gate.ts) with its tests.
+// gate v3. The canonical copy lives in luvwadhwani/portfolio-hub (lib/gate.ts) with its tests.
 // Copy it unchanged into each project, next to proxy.ts (templates/proxy.ts in the hub).
 import { errors, importSPKI, jwtVerify } from 'jose';
 
@@ -11,6 +11,7 @@ export interface Viewer {
   id: string;
   name: string;
   projects: string[];
+  admin: boolean;
 }
 
 export type Verified = { ok: true; viewer: Viewer } | { ok: false; reason: 'missing' | 'invalid' | 'expired' | 'not-in-project' };
@@ -53,7 +54,7 @@ export async function verifyPass(token: string | undefined, publicKeyPem: string
     }
     const projects = payload.projects.filter((p): p is string => typeof p === 'string');
     if (!projects.includes(projectId)) return { ok: false, reason: 'not-in-project' };
-    return { ok: true, viewer: { id: payload.sub, name: payload.name, projects } };
+    return { ok: true, viewer: { id: payload.sub, name: payload.name, projects, admin: payload.admin === true } };
   } catch (err) {
     return { ok: false, reason: err instanceof errors.JWTExpired ? 'expired' : 'invalid' };
   }

@@ -1,4 +1,4 @@
-// proxy v2. The canonical copy lives in luvwadhwani/portfolio-hub (templates/proxy.ts).
+// proxy v3. The canonical copy lives in luvwadhwani/portfolio-hub (templates/proxy.ts).
 // Copy it unchanged to a project's root as proxy.ts, next to lib/gate.ts.
 import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
 import { PASS_COOKIE, RENEWED_PARAM, gateDecision, gateEnv, sendVisit, stopPageHtml, verifyPass } from '@/lib/gate';
@@ -27,6 +27,7 @@ export async function proxy(req: NextRequest, event: NextFetchEvent) {
   // Pages read the viewer's name for the top bar. Set here, so a client can't supply its own.
   const headers = new Headers(req.headers);
   headers.set('x-lw-viewer', encodeURIComponent(decision.viewer.name));
+  headers.set('x-lw-admin', decision.viewer.admin ? '1' : '0');
   return NextResponse.next({ request: { headers } });
 }
 

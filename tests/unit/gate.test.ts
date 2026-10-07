@@ -37,6 +37,10 @@ describe('verifyPass', () => {
     expect(await verifyPass('not-a-jwt', TEST_PUBLIC_KEY, 'triage', now)).toEqual({ ok: false, reason: 'invalid' });
   });
 
+  it('reads a pass without an admin claim as not admin', async () => {
+    expect(await verifyPass(await pass(), TEST_PUBLIC_KEY, 'triage', now)).toMatchObject({ ok: true, viewer: { admin: false } });
+  });
+
   it('rejects a valid pass for a project the invite does not include', async () => {
     expect(await verifyPass(await pass({ projects: ['qa'] }), TEST_PUBLIC_KEY, 'triage', now)).toEqual({ ok: false, reason: 'not-in-project' });
   });
@@ -44,7 +48,7 @@ describe('verifyPass', () => {
 
 describe('gateDecision', () => {
   const hub = 'https://work.luvwadhwani.com';
-  const allowed: Verified = { ok: true, viewer: { id: 'acc-1', name: 'Acme', projects: ['triage'] } };
+  const allowed: Verified = { ok: true, viewer: { id: 'acc-1', name: 'Acme', projects: ['triage'], admin: false } };
   const missing: Verified = { ok: false, reason: 'missing' };
   const page = (url: string, renewed = false) => ({ method: 'GET', url, renewed });
 

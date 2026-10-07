@@ -1,18 +1,38 @@
-// top bar v1. The canonical copy lives in luvwadhwani/portfolio-hub (components/TopBar.tsx + topbar.css).
-// Copy both files unchanged into each project.
+// top bar v3. The canonical copy lives in luvwadhwani/portfolio-hub (components/TopBar.tsx, ThemeSwitch.tsx,
+// topbar.css and lib/theme.ts). Copy all four unchanged into each project.
+import type { Theme } from '@/lib/theme';
+import { ThemeSwitch } from './ThemeSwitch';
 import './topbar.css';
 
-export function TopBar({ viewerName, hubUrl }: { viewerName: string; hubUrl: string }) {
+export interface TopBarViewer {
+  name: string;
+  admin: boolean;
+}
+
+export function TopBar({ viewer, hubUrl, theme }: { viewer: TopBarViewer | null; hubUrl: string; theme: Theme }) {
   return (
-    <nav className="lw-topbar" aria-label="Luv Wadhwani's workspace">
-      <a className="lw-name" href={hubUrl}>
+    <header className="lw-topbar">
+      <a className="lw-name" href={`${hubUrl}/`}>
         Luv Wadhwani
       </a>
-      <a href={hubUrl}>All projects</a>
-      <span className="lw-viewer">Signed in as {viewerName}</span>
-      <form method="post" action={`${hubUrl}/api/sign-out`}>
-        <button type="submit">Sign out</button>
-      </form>
-    </nav>
+      {viewer && (
+        <nav className="lw-nav" aria-label="Workspace">
+          <a href={`${hubUrl}/`}>Projects</a>
+          {viewer.admin && <a href={`${hubUrl}/admin`}>Admin</a>}
+        </nav>
+      )}
+      <span className="lw-spacer" />
+      <ThemeSwitch initial={theme} />
+      {viewer && (
+        <>
+          <span className="lw-viewer">Signed in as {viewer.name}</span>
+          <form method="post" action={`${hubUrl}/api/sign-out`}>
+            <button type="submit" className="lw-signout">
+              Sign out
+            </button>
+          </form>
+        </>
+      )}
+    </header>
   );
 }
