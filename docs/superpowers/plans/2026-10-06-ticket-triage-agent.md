@@ -24,7 +24,7 @@
 - Agent loop capped at **8 steps**. Safety rules run **after** the agent and can only make the outcome more cautious.
 - Decision buttons are demo-only. **Nothing is ever sent.**
 - Recorded runs are labelled `Recorded run from <date>`. Mock recordings (`model: "mock"`) must never be deployed; Task 12 has a release gate for this.
-- Live runs: Vercel Firewall rate limit **5 per IP per hour** on `POST /api/run`, AI Gateway budget **$10/month**, kill switch `LIVE_RUNS_ENABLED=false`.
+- Live runs: Vercel Firewall rate limit **5 per IP per day** on `POST /api/run`, AI Gateway budget **$10/month**, kill switch `LIVE_RUNS_ENABLED=false`.
 - Accuracy is published as measured, never adjusted.
 
 ## Review Focus
@@ -3019,7 +3019,7 @@ Expected: `.env.local` contains `VERCEL_OIDC_TOKEN`, which authenticates the AI 
 
 - [ ] **Step 3 (Luv): Set the guardrails in the Vercel dashboard**
   - AI Gateway → Budgets: monthly budget **$10**.
-  - Firewall → Add rule "Live run rate limit": if Request Path equals `/api/run` and Method equals `POST`, then Rate Limit at **5 requests per 1 hour per IP**, action **429**.
+  - Firewall → Add rule "Live run rate limit": if Request Path equals `/api/run` and Method equals `POST`, then Rate Limit at **5 requests per 1 day per IP**, action **429**.
   - Project → Environment Variables: `NEXT_PUBLIC_REPO_URL` = the repo URL from Step 1 (Production and Preview).
 
 - [ ] **Step 4: Record the real runs, and read them before committing**

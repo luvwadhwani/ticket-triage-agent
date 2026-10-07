@@ -36,7 +36,7 @@ export async function* readRunStream(res: Response): AsyncGenerator<RunEvent> {
 /** Why a live run could not be shown, in one sentence. */
 export function liveFailureReason(err: unknown): string {
   const status = err instanceof LiveRunError ? err.status : 0;
-  if (status === 429) return 'Live runs are rate-limited (5 per hour).';
+  if (status === 429) return 'Live runs are rate-limited (5 per day).';
   if (status === 503) return 'Live runs are switched off right now.';
   return 'The live run failed.';
 }

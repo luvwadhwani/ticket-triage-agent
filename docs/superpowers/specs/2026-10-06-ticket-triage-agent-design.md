@@ -115,7 +115,7 @@ Final outcome is one of: **Ready to send**, **Needs human (rule)**, **Escalated 
 - **Recorded runs:** `scripts/record-runs.ts` runs the real agent once per preset ticket and saves
   the event stream to `runs/`. The page replays these by default: zero API cost per visit.
 - **Live runs:** `POST /api/run` accepts preset ticket IDs only. Protected by a Vercel Firewall
-  rate-limit rule (about 5 live runs per IP per hour) and an AI Gateway monthly budget cap
+  rate-limit rule (about 5 live runs per IP per day) and an AI Gateway monthly budget cap
   (proposed **$10**, set by Luv). Expected cost per live run: about $0.05–0.10.
 
 ## 6. Error handling

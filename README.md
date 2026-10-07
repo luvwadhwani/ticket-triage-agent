@@ -39,7 +39,7 @@ ticket ─▶ Claude (AI SDK 7 tool loop, max 8 steps) ─▶ 7 tools over fake 
 
 - Next.js 16, TypeScript and Tailwind, deployed on Vercel.
 - Claude Sonnet through the Vercel AI Gateway.
-- Every run is a stream of events. The page replays a **recorded real run** by default, so visiting costs nothing. **Run live** streams a fresh run, rate-limited to 5 per hour per visitor with a monthly spend cap. If a live run can't start, the page says why and plays the recording instead.
+- Every run is a stream of events. The page replays a **recorded real run** by default, so visiting costs nothing. **Run live** streams a fresh run, rate-limited to 5 per day per visitor with a monthly spend cap. If a live run can't start, the page says why and plays the recording instead.
 
 | Part | Where |
 |---|---|

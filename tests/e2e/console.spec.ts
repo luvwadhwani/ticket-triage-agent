@@ -67,6 +67,6 @@ test('a rate-limited live run falls back to the recording and says why', async (
   await page.goto('/');
   await expect(decision(page).getByText('Needs your approval')).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Run live' }).click();
-  await expect(page.getByText('Live runs are rate-limited (5 per hour). Showing the recorded run instead.')).toBeVisible();
+  await expect(page.getByText('Live runs are rate-limited (5 per day). Showing the recorded run instead.')).toBeVisible();
   await expect(decision(page).getByText('Needs your approval')).toBeVisible({ timeout: 15_000 });
 });
