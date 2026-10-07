@@ -1,42 +1,75 @@
-/* top bar v4. The same navy bar in every project; its colours follow the shared light/dark choice. */
+/* top bar v5. The same navy bar in every project; its colours follow the shared light/dark choice. */
 .lw-topbar {
-  --lw-bar: #0b1b33; --lw-ink: #e6edf7; --lw-muted: #9fb3cf; --lw-line: #33496b;
-  --lw-chip: #1b2c49; --lw-chip-on: #e6edf7; --lw-chip-on-ink: #0b1b33; --lw-edge: transparent;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 8px 16px;
+  --lw-bar: #0b1b33; --lw-ink: #eef3fb; --lw-muted: #9fb3cf; --lw-line: #22385a; --lw-lift: #16294a; --lw-edge: #0b1b33;
+  --lw-mark: #2563eb; --lw-avatar: #1d4ed8; --lw-focus: #60a5fa;
+  --lw-panel: #ffffff; --lw-panel-ink: #0f172a; --lw-panel-muted: #475569; --lw-panel-line: #e2e8f0; --lw-panel-hover: #f1f5f9;
+  position: relative; z-index: 50;
+  display: flex; align-items: center; gap: 18px; min-height: 56px; padding: 0 20px;
   background: var(--lw-bar); color: var(--lw-ink); border-bottom: 1px solid var(--lw-edge);
-  font: 13px/1.4 var(--font-instrument, ui-sans-serif), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 13.5px/1.4 var(--font-instrument, ui-sans-serif), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 :root[data-theme="dark"] .lw-topbar {
-  --lw-bar: #060d1a; --lw-ink: #e2e8f0; --lw-muted: #94a3b8; --lw-line: #334155;
-  --lw-chip: #16213a; --lw-chip-on: #e2e8f0; --lw-chip-on-ink: #060d1a; --lw-edge: #1e293b;
+  --lw-bar: #070e1c; --lw-line: #1c2a44; --lw-lift: #111d35; --lw-edge: #18233a;
+  --lw-panel: #111a2e; --lw-panel-ink: #e2e8f0; --lw-panel-muted: #94a3b8; --lw-panel-line: #1e293b; --lw-panel-hover: #16213a;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .lw-topbar {
-    --lw-bar: #060d1a; --lw-ink: #e2e8f0; --lw-muted: #94a3b8; --lw-line: #334155;
-    --lw-chip: #16213a; --lw-chip-on: #e2e8f0; --lw-chip-on-ink: #060d1a; --lw-edge: #1e293b;
+    --lw-bar: #070e1c; --lw-line: #1c2a44; --lw-lift: #111d35; --lw-edge: #18233a;
+    --lw-panel: #111a2e; --lw-panel-ink: #e2e8f0; --lw-panel-muted: #94a3b8; --lw-panel-line: #1e293b; --lw-panel-hover: #16213a;
   }
 }
-.lw-topbar a { color: var(--lw-ink); text-decoration: none; }
-.lw-topbar a:hover { text-decoration: underline; }
-.lw-topbar .lw-name { font-weight: 600; }
-/* Project tabs. With many projects the row scrolls sideways inside the bar; the page never does. */
-.lw-topbar .lw-nav { display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
-.lw-topbar .lw-nav::-webkit-scrollbar { display: none; }
-.lw-topbar .lw-nav a { color: var(--lw-muted); white-space: nowrap; padding: 3px 9px; border-radius: 6px; }
-.lw-topbar .lw-nav a:hover { color: var(--lw-ink); background: var(--lw-chip); text-decoration: none; }
-.lw-topbar .lw-nav a[aria-current="page"] { color: var(--lw-ink); background: var(--lw-chip); font-weight: 600; }
-.lw-topbar .lw-spacer { flex: 1; }
-.lw-topbar .lw-viewer { color: var(--lw-muted); }
-.lw-topbar form { margin: 0; }
-.lw-topbar .lw-signout { font: inherit; color: var(--lw-ink); background: none; border: 1px solid var(--lw-line); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
-.lw-topbar .lw-signout:hover { border-color: var(--lw-ink); }
-.lw-theme { display: inline-flex; gap: 2px; padding: 2px; border-radius: 8px; background: var(--lw-chip); }
-.lw-theme button { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 24px; border: 0; border-radius: 6px; background: none; color: var(--lw-muted); cursor: pointer; }
-.lw-theme button:hover { color: var(--lw-ink); }
-.lw-theme button[aria-pressed="true"] { background: var(--lw-chip-on); color: var(--lw-chip-on-ink); }
-.lw-topbar :focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
-@media (max-width: 520px) {
-  /* Phone: name, switch and sign-out on the first row; the tabs on their own row; who's signed in last. */
-  .lw-topbar .lw-nav { order: 5; flex-basis: calc(100% + 18px); margin: 0 -9px; }
-  .lw-topbar .lw-viewer { order: 10; flex-basis: 100%; }
+.lw-topbar svg { width: 16px; height: 16px; flex: none; }
+
+/* Brand: monogram, name, and what this place is */
+.lw-brand { display: flex; align-items: center; gap: 12px; flex: none; white-space: nowrap; }
+.lw-home { display: flex; align-items: center; gap: 10px; color: var(--lw-ink); text-decoration: none; }
+.lw-mark { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; background: var(--lw-mark); color: #fff; font-weight: 700; font-size: 11.5px; letter-spacing: -0.02em; }
+.lw-name { font-weight: 600; font-size: 14px; letter-spacing: -0.005em; }
+.lw-space { color: var(--lw-muted); padding-left: 12px; border-left: 1px solid var(--lw-line); line-height: 16px; }
+
+/* Projects: a glyph and a name each; the current one sits in a lifted tile. Many projects scroll sideways inside the bar. */
+.lw-tabs { display: flex; align-items: center; gap: 4px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.lw-tabs::-webkit-scrollbar { display: none; }
+.lw-tab { display: flex; align-items: center; gap: 7px; height: 32px; padding: 0 11px; border-radius: 8px; color: var(--lw-muted); font-weight: 500; text-decoration: none; white-space: nowrap; }
+.lw-tab svg { width: 15px; height: 15px; }
+.lw-tab:hover { color: var(--lw-ink); background: var(--lw-lift); }
+.lw-tab[aria-current="page"] { color: var(--lw-ink); background: var(--lw-lift); box-shadow: inset 0 0 0 1px var(--lw-line); }
+.lw-spacer { flex: 1; }
+
+/* Menus: colour mode and the account */
+.lw-menu-wrap { position: relative; flex: none; }
+.lw-menu-button { display: flex; align-items: center; gap: 8px; height: 32px; font: inherit; color: var(--lw-muted); background: none; border: 1px solid var(--lw-line); border-radius: 8px; cursor: pointer; }
+.lw-menu-button:hover, .lw-menu-button[aria-expanded="true"] { color: var(--lw-ink); background: var(--lw-lift); }
+.lw-theme .lw-menu-button { width: 32px; justify-content: center; padding: 0; }
+.lw-account .lw-menu-button { padding: 0 9px 0 3px; border-radius: 999px; color: var(--lw-ink); }
+.lw-avatar { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--lw-avatar); color: #fff; font-weight: 600; font-size: 11px; letter-spacing: 0.02em; }
+.lw-account-name { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.lw-chevron { color: var(--lw-muted); }
+.lw-topbar .lw-chevron { width: 14px; height: 14px; }
+.lw-menu { position: absolute; right: 0; top: calc(100% + 8px); min-width: 220px; padding: 6px; display: grid; gap: 2px;
+  background: var(--lw-panel); color: var(--lw-panel-ink); border: 1px solid var(--lw-panel-line); border-radius: 12px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08), 0 16px 40px rgb(15 23 42 / 0.22); }
+.lw-menu[hidden] { display: none; }
+.lw-menu a, .lw-menu button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: 8px; background: none;
+  color: var(--lw-panel-ink); font: inherit; text-align: left; text-decoration: none; white-space: nowrap; cursor: pointer; }
+.lw-menu a:hover, .lw-menu button:hover { background: var(--lw-panel-hover); }
+.lw-menu svg { color: var(--lw-panel-muted); }
+.lw-menu button[aria-pressed="true"] { font-weight: 600; }
+.lw-menu button[aria-pressed="true"]::after { content: ""; margin-left: auto; width: 9px; height: 5px; border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(-45deg); }
+.lw-menu form { margin: 0; }
+.lw-menu hr { border: 0; height: 1px; margin: 4px 0; background: var(--lw-panel-line); }
+.lw-menu-head { display: grid; gap: 1px; margin: 0 0 4px; padding: 8px 10px 10px; border-bottom: 1px solid var(--lw-panel-line); }
+.lw-menu-head span { color: var(--lw-panel-muted); font-size: 12px; }
+.lw-menu-head b { font-weight: 600; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lw-topbar :focus-visible { outline: 2px solid var(--lw-focus); outline-offset: 2px; }
+
+/* Narrower screens drop the label and the account name first, then move the projects to their own row. */
+@media (max-width: 900px) {
+  .lw-space, .lw-account-name, .lw-account .lw-chevron { display: none; }
+  .lw-account .lw-menu-button { padding: 0 3px; }
+}
+@media (max-width: 640px) {
+  .lw-topbar { flex-wrap: wrap; gap: 0 10px; padding: 0 12px; }
+  .lw-brand { height: 52px; }
+  .lw-tabs { order: 5; flex-basis: calc(100% + 24px); margin: 0 -12px; padding: 0 8px 8px; }
 }

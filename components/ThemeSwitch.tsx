@@ -1,7 +1,8 @@
 'use client';
-// theme switch v2. The canonical copy lives in luvwadhwani/portfolio-hub. Copy it unchanged into each project.
+// theme switch v3. The canonical copy lives in luvwadhwani/portfolio-hub. Copy it unchanged into each project.
 import { useEffect, useSyncExternalStore, type ReactNode } from 'react';
 import { themeAttribute, themeCookie, themeFromCookies, type Theme } from '@/lib/theme';
+import { BarMenu } from './BarMenu';
 
 const icon = (children: ReactNode) => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -73,13 +74,16 @@ export function ThemeSwitch({ initial }: { initial: Theme }) {
     applyTheme(next);
     listeners.forEach((listener) => listener());
   }
+  // The button shows the mode in effect; the menu offers all three, with a check beside the chosen one.
+  const shown = OPTIONS.find((o) => o.value === theme) ?? OPTIONS[2];
   return (
-    <div className="lw-theme" role="group" aria-label="Colour mode">
+    <BarMenu label="Colour mode" className="lw-theme" trigger={shown.icon}>
       {OPTIONS.map((o) => (
-        <button key={o.value} type="button" aria-label={o.label} title={o.label} aria-pressed={theme === o.value} onClick={() => choose(o.value)}>
+        <button key={o.value} type="button" aria-pressed={theme === o.value} onClick={() => choose(o.value)}>
           {o.icon}
+          {o.label}
         </button>
       ))}
-    </div>
+    </BarMenu>
   );
 }

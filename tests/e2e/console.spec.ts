@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { chooseColour, openAccountMenu } from './bar';
 import { TEST_VIEWER, addPass } from './pass';
 
 const pickTicket = (page: Page, subject: string) =>
@@ -87,10 +88,12 @@ test('an expired pass during a live run goes through the hub and comes back to t
 test('the shared top bar names the viewer and links back to the projects', async ({ page }) => {
   await page.goto('/');
   const bar = page.getByRole('banner');
-  await expect(bar.getByText(`Signed in as ${TEST_VIEWER}`)).toBeVisible();
+  await expect(bar.getByRole('button', { name: `Signed in as ${TEST_VIEWER}` })).toBeVisible();
   await expect(bar.getByRole('navigation', { name: 'Workspace' }).getByRole('link')).toHaveText(['Ticket triage agent', 'QA agent', 'Digital Twin Studio']);
   await expect(bar.getByRole('link', { name: 'Ticket triage agent' })).toHaveAttribute('aria-current', 'page');
   await expect(bar.getByRole('link', { name: 'Luv Wadhwani' })).toHaveAttribute('href', 'http://localhost:3100/');
+  await openAccountMenu(page);
+  await expect(bar.getByRole('link', { name: 'All projects' })).toBeVisible();
   await expect(bar.getByRole('link', { name: 'Admin' })).toHaveCount(0);
 });
 
@@ -98,7 +101,9 @@ test("a prospect can't make the Admin link appear by sending the admin header th
   await page.setExtraHTTPHeaders({ 'x-lw-admin': '1' });
   await page.goto('/');
   const bar = page.getByRole('banner');
-  await expect(bar.getByText(`Signed in as ${TEST_VIEWER}`)).toBeVisible();
+  await expect(bar.getByRole('button', { name: `Signed in as ${TEST_VIEWER}` })).toBeVisible();
+  await openAccountMenu(page);
+  await expect(bar.getByRole('link', { name: 'All projects' })).toBeVisible();
   await expect(bar.getByRole('link', { name: 'Admin' })).toHaveCount(0);
 });
 
@@ -111,7 +116,7 @@ test('each page has one banner landmark, the shared top bar', async ({ page }) =
 
 test('the colour switch is remembered across a reload', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('banner').getByRole('button', { name: 'Dark' }).click();
+  await chooseColour(page, 'Dark');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
