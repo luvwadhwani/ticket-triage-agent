@@ -65,7 +65,7 @@ npm run dev            # replays the committed recordings; no API key needed
 
 For live runs, recordings and evals, link the Vercel project and pull its environment (`npx vercel link && npx vercel env pull .env.local`), or set `AI_GATEWAY_API_KEY`.
 
-The running demo sits behind Luv's client workspace. Locally, `npm run dev` needs the gate settings: `GATE_PUBLIC_KEY`, `NEXT_PUBLIC_HUB_URL` and `PROJECT_ID`. The test key in `tests/fixtures/keys.ts` works with the hub's local setup. Live runs also need `LIVE_RUNS_ENABLED=true`, and the workspace counts each viewer's runs.
+The running demo sits behind Luv's client workspace. Locally, `npm run dev` needs the gate settings: `GATE_PUBLIC_KEY`, `NEXT_PUBLIC_HUB_URL` and `PROJECT_ID`. To run it against a local hub, run `npm run dev:setup` in the hub. Then set the public key it prints as `GATE_PUBLIC_KEY`, `NEXT_PUBLIC_HUB_URL=http://localhost:3100` and `PROJECT_ID=triage`. Start the hub with `PROJECT_URL_TRIAGE=http://localhost:3000`. The browser tests use the test key in `tests/fixtures/keys.ts`, which the gate refuses whenever the hub is on https or `PUBLIC_ORIGIN` is set. Live runs also need `LIVE_RUNS_ENABLED=true`, and the workspace counts each viewer's runs.
 
 ## Out of scope, on purpose
 

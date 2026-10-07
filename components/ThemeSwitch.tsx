@@ -42,14 +42,27 @@ function applyTheme(next: Theme) {
   if (attr) document.documentElement.dataset.theme = attr;
   else delete document.documentElement.dataset.theme;
   document.cookie = themeCookie(next, window.location.hostname);
+  // A browser that blocks cookies keeps the choice for this page only.
+  unsaved = themeFromCookies(document.cookie) === next ? null : next;
 }
 
+let unsaved: Theme | null = null;
+const cookieChoice = () => unsaved ?? themeFromCookies(document.cookie);
 const listeners = new Set<() => void>();
 const subscribe = (listener: () => void) => {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  // A page restored from the browser's back/forward cache runs no effects, so read the cookie again then.
+  const onPageShow = (e: PageTransitionEvent) => {
+    if (!e.persisted) return;
+    applyTheme(cookieChoice());
+    listener();
+  };
+  window.addEventListener('pageshow', onPageShow);
+  return () => {
+    listeners.delete(listener);
+    window.removeEventListener('pageshow', onPageShow);
+  };
 };
-const cookieChoice = () => themeFromCookies(document.cookie);
 
 export function ThemeSwitch({ initial }: { initial: Theme }) {
   // The cookie, not the server-rendered `initial`, says what's chosen: after Back or Forward the page can

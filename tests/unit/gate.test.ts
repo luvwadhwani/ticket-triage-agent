@@ -143,10 +143,11 @@ describe('gateEnv', () => {
     ).toEqual({ publicKey: 'line1\nline2', hubUrl: 'https://work.luvwadhwani.com', projectId: 'triage', canonicalOrigin: null });
   });
 
-  it('refuses the published test key on a production deployment, where anyone could sign passes with it', () => {
-    const settings = { GATE_PUBLIC_KEY: TEST_PUBLIC_KEY.replace(/\n/g, '\\n'), NEXT_PUBLIC_HUB_URL: 'https://work.luvwadhwani.com', PROJECT_ID: 'triage' };
-    expect(() => gateEnv({ ...settings, PUBLIC_ORIGIN: 'https://triage.luvwadhwani.com' })).toThrow('test key');
-    expect(gateEnv(settings).publicKey).toBe(TEST_PUBLIC_KEY);
+  it('refuses the published test key wherever it could matter, since anyone can sign passes with it', () => {
+    const local = { GATE_PUBLIC_KEY: TEST_PUBLIC_KEY.replace(/\n/g, '\\n'), NEXT_PUBLIC_HUB_URL: 'http://localhost:3100', PROJECT_ID: 'triage' };
+    expect(gateEnv(local).publicKey).toBe(TEST_PUBLIC_KEY);
+    expect(() => gateEnv({ ...local, PUBLIC_ORIGIN: 'https://triage.luvwadhwani.com' })).toThrow('test key');
+    expect(() => gateEnv({ ...local, NEXT_PUBLIC_HUB_URL: 'https://work.luvwadhwani.com' })).toThrow('test key');
   });
 
   it('refuses to run without its settings', () => {

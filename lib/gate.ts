@@ -122,11 +122,13 @@ export function gateEnv(env: Record<string, string | undefined> = process.env): 
   if (!publicKey || !hubUrl || !projectId) {
     throw new Error('The gate needs GATE_PUBLIC_KEY, NEXT_PUBLIC_HUB_URL and PROJECT_ID.');
   }
+  const hub = new URL(hubUrl);
   const canonicalOrigin = env.PUBLIC_ORIGIN ? new URL(env.PUBLIC_ORIGIN).origin : null;
-  if (canonicalOrigin && isPublishedTestKey(publicKey)) {
+  // Anywhere real (a production origin, or a hub on https), the published test key would let anyone in.
+  if ((canonicalOrigin || hub.protocol === 'https:') && isPublishedTestKey(publicKey)) {
     throw new Error('GATE_PUBLIC_KEY is the published test key. Use the key printed by `npm run secrets` in the hub.');
   }
-  return { publicKey, hubUrl: new URL(hubUrl).origin, projectId, canonicalOrigin };
+  return { publicKey, hubUrl: hub.origin, projectId, canonicalOrigin };
 }
 
 /** Tells the hub a page was opened. Fire-and-forget: a lost log line must never block the visitor. */
