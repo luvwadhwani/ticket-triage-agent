@@ -88,7 +88,9 @@ test('the shared top bar names the viewer and links back to the projects', async
   await page.goto('/');
   const bar = page.getByRole('banner');
   await expect(bar.getByText(`Signed in as ${TEST_VIEWER}`)).toBeVisible();
-  await expect(bar.getByRole('link', { name: 'Projects' })).toHaveAttribute('href', 'http://localhost:3100/');
+  await expect(bar.getByRole('navigation', { name: 'Workspace' }).getByRole('link')).toHaveText(['Ticket triage agent', 'QA agent', 'Digital Twin Studio']);
+  await expect(bar.getByRole('link', { name: 'Ticket triage agent' })).toHaveAttribute('aria-current', 'page');
+  await expect(bar.getByRole('link', { name: 'Luv Wadhwani' })).toHaveAttribute('href', 'http://localhost:3100/');
   await expect(bar.getByRole('link', { name: 'Admin' })).toHaveCount(0);
 });
 

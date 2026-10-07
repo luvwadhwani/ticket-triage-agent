@@ -1,4 +1,4 @@
-// gate v4. The canonical copy lives in luvwadhwani/portfolio-hub (lib/gate.ts) with its tests.
+// gate v5. The canonical copy lives in luvwadhwani/portfolio-hub (lib/gate.ts) with its tests.
 // Copy it unchanged into each project, next to proxy.ts (templates/proxy.ts in the hub).
 import { errors, importSPKI, jwtVerify } from 'jose';
 
@@ -11,11 +11,19 @@ export const RENEWED_PARAM = 'lw_renewed';
 const PUBLISHED_TEST_KEY = 'MCowBQYDK2VwAyEAwgOyzngPVbbdN9OdHzNExpghEPjs/SsPIztXnx/6hRw=';
 export const isPublishedTestKey = (pem: string) => pem.replace(/-----[^-]+-----|\s/g, '') === PUBLISHED_TEST_KEY;
 
+/** A project the viewer may open, as the hub listed it in the pass. Every top bar shows these as tabs. */
+export interface NavProject {
+  id: string;
+  name: string;
+  url: string;
+}
+
 export interface Viewer {
   id: string;
   name: string;
   projects: string[];
   admin: boolean;
+  nav: NavProject[];
 }
 
 export type Verified = { ok: true; viewer: Viewer } | { ok: false; reason: 'missing' | 'invalid' | 'expired' | 'not-in-project' };
@@ -59,9 +67,37 @@ export async function verifyPass(token: string | undefined, publicKeyPem: string
     }
     const projects = payload.projects.filter((p): p is string => typeof p === 'string');
     if (!projects.includes(projectId)) return { ok: false, reason: 'not-in-project' };
-    return { ok: true, viewer: { id: payload.sub, name: payload.name, projects, admin: payload.admin === true } };
+    return { ok: true, viewer: { id: payload.sub, name: payload.name, projects, admin: payload.admin === true, nav: parseNav(payload.nav) } };
   } catch (err) {
     return { ok: false, reason: err instanceof errors.JWTExpired ? 'expired' : 'invalid' };
+  }
+}
+
+/** Well-formed entries only, each reduced to its origin; anything else (or a pass from before gate v5) gives []. */
+export function parseNav(value: unknown): NavProject[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry) => {
+    if (!entry || typeof entry !== 'object') return [];
+    const { id, name, url } = entry as Record<string, unknown>;
+    if (typeof id !== 'string' || typeof name !== 'string' || typeof url !== 'string') return [];
+    try {
+      const u = new URL(url);
+      return u.protocol === 'https:' || u.protocol === 'http:' ? [{ id, name, url: u.origin }] : [];
+    } catch {
+      return [];
+    }
+  });
+}
+
+/** The proxy hands the list to the page in the x-lw-nav request header, which carries ASCII only. */
+export const navHeader = (nav: NavProject[]) => encodeURIComponent(JSON.stringify(nav));
+
+export function navFromHeader(value: string | null): NavProject[] {
+  if (!value) return [];
+  try {
+    return parseNav(JSON.parse(decodeURIComponent(value)));
+  } catch {
+    return [];
   }
 }
 

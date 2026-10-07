@@ -1,14 +1,14 @@
 import { SignJWT, importPKCS8 } from 'jose';
 import { describe, expect, it } from 'vitest';
-import { gateDecision, gateEnv, readCookie, stopPageHtml, verifyPass, type Verified } from '@/lib/gate';
+import { gateDecision, gateEnv, navFromHeader, navHeader, parseNav, readCookie, stopPageHtml, verifyPass, type Verified } from '@/lib/gate';
 import { TEST_PRIVATE_KEY, TEST_PUBLIC_KEY } from '../fixtures/keys';
 
 const now = new Date('2026-10-07T10:00:00Z');
 const sec = (d: Date) => Math.floor(d.getTime() / 1000);
 
-async function pass(overrides: { exp?: number; iss?: string; projects?: unknown; name?: unknown } = {}) {
+async function pass(overrides: { exp?: number; iss?: string; projects?: unknown; name?: unknown; nav?: unknown } = {}) {
   const key = await importPKCS8(TEST_PRIVATE_KEY, 'Ed25519');
-  return new SignJWT({ name: overrides.name ?? 'Acme', projects: overrides.projects ?? ['triage'] })
+  return new SignJWT({ name: overrides.name ?? 'Acme', projects: overrides.projects ?? ['triage'], ...(overrides.nav === undefined ? {} : { nav: overrides.nav }) })
     .setProtectedHeader({ alg: 'Ed25519' })
     .setSubject('acc-1')
     .setIssuer(overrides.iss ?? 'work.luvwadhwani.com')
@@ -58,9 +58,37 @@ describe('verifyPass', () => {
   });
 });
 
+describe('the projects in a pass', () => {
+  const TRIAGE = { id: 'triage', name: 'Ticket triage agent', url: 'https://triage.luvwadhwani.com' };
+
+  it('come back from a pass, so every project can list them in its top bar', async () => {
+    const token = await pass({ nav: [TRIAGE, { id: 'qa', name: 'QA agent', url: 'https://qa.luvwadhwani.com' }] });
+    expect(await verifyPass(token, TEST_PUBLIC_KEY, 'triage', now)).toMatchObject({ ok: true, viewer: { nav: [TRIAGE, { id: 'qa', name: 'QA agent', url: 'https://qa.luvwadhwani.com' }] } });
+  });
+
+  it('are an empty list in a pass from before they existed', async () => {
+    expect(await verifyPass(await pass(), TEST_PUBLIC_KEY, 'triage', now)).toMatchObject({ ok: true, viewer: { nav: [] } });
+  });
+
+  it('keep only well-formed entries with an http(s) address', () => {
+    expect(parseNav([TRIAGE, { id: 'x', name: 'Bad', url: 'javascript:alert(1)' }, { id: 'y', name: 7, url: 'https://y.luvwadhwani.com' }, 'junk', null])).toEqual([TRIAGE]);
+    expect(parseNav({ not: 'a list' })).toEqual([]);
+    expect(parseNav([{ ...TRIAGE, url: 'https://triage.luvwadhwani.com/some/path?x=1' }])).toEqual([TRIAGE]);
+  });
+
+  it('travel to the page in a header and back, including names that are not plain ASCII', () => {
+    const nav = [{ id: 'twin', name: 'Digital Twin Studio – wind', url: 'https://twin.luvwadhwani.com' }];
+    const header = navHeader(nav);
+    expect(header).toMatch(/^[\x20-\x7e]+$/);
+    expect(navFromHeader(header)).toEqual(nav);
+    expect(navFromHeader(null)).toEqual([]);
+    expect(navFromHeader('%7Bnot json')).toEqual([]);
+  });
+});
+
 describe('gateDecision', () => {
   const hub = 'https://work.luvwadhwani.com';
-  const allowed: Verified = { ok: true, viewer: { id: 'acc-1', name: 'Acme', projects: ['triage'], admin: false } };
+  const allowed = { ok: true, viewer: { id: 'acc-1', name: 'Acme', projects: ['triage'], admin: false, nav: [] } } satisfies Verified;
   const missing: Verified = { ok: false, reason: 'missing' };
   const page = (url: string, renewed = false) => ({ method: 'GET', url, renewed });
 

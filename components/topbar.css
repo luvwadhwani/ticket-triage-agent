@@ -1,4 +1,4 @@
-/* top bar v3. The same navy bar in every project; its colours follow the shared light/dark choice. */
+/* top bar v4. The same navy bar in every project; its colours follow the shared light/dark choice. */
 .lw-topbar {
   --lw-bar: #0b1b33; --lw-ink: #e6edf7; --lw-muted: #9fb3cf; --lw-line: #33496b;
   --lw-chip: #1b2c49; --lw-chip-on: #e6edf7; --lw-chip-on-ink: #0b1b33; --lw-edge: transparent;
@@ -19,9 +19,12 @@
 .lw-topbar a { color: var(--lw-ink); text-decoration: none; }
 .lw-topbar a:hover { text-decoration: underline; }
 .lw-topbar .lw-name { font-weight: 600; }
-.lw-topbar .lw-nav { display: flex; gap: 14px; }
-.lw-topbar .lw-nav a { color: var(--lw-muted); }
-.lw-topbar .lw-nav a:hover { color: var(--lw-ink); }
+/* Project tabs. With many projects the row scrolls sideways inside the bar; the page never does. */
+.lw-topbar .lw-nav { display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.lw-topbar .lw-nav::-webkit-scrollbar { display: none; }
+.lw-topbar .lw-nav a { color: var(--lw-muted); white-space: nowrap; padding: 3px 9px; border-radius: 6px; }
+.lw-topbar .lw-nav a:hover { color: var(--lw-ink); background: var(--lw-chip); text-decoration: none; }
+.lw-topbar .lw-nav a[aria-current="page"] { color: var(--lw-ink); background: var(--lw-chip); font-weight: 600; }
 .lw-topbar .lw-spacer { flex: 1; }
 .lw-topbar .lw-viewer { color: var(--lw-muted); }
 .lw-topbar form { margin: 0; }
@@ -33,5 +36,7 @@
 .lw-theme button[aria-pressed="true"] { background: var(--lw-chip-on); color: var(--lw-chip-on-ink); }
 .lw-topbar :focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
 @media (max-width: 520px) {
+  /* Phone: name, switch and sign-out on the first row; the tabs on their own row; who's signed in last. */
+  .lw-topbar .lw-nav { order: 5; flex-basis: calc(100% + 18px); margin: 0 -9px; }
   .lw-topbar .lw-viewer { order: 10; flex-basis: 100%; }
 }
